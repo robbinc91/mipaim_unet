@@ -1,3 +1,7 @@
+import tensorflow as tf
+
+
+
 from model import inception_unet
 from utils import *
 import pickle
@@ -7,6 +11,9 @@ from common import *
 
 
 if __name__ == '__main__':
+    tf.compat.v1.enable_eager_execution()
+
+
     model_ = inception_unet()
     model_.compile('adam', dice_loss, [dice_coefficient])
     model_.summary()
@@ -45,5 +52,6 @@ if __name__ == '__main__':
                          )])
     with open('history/unet_3d_inception_trainHistoryDict' + str(label) + '.pickle', 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
+
 
 
