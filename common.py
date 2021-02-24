@@ -1,7 +1,7 @@
 from utils import *
 
 # VARIABLES
-ROOT = "./datasets/mrbrains_full_2018"  # BASE PATH TO MRBrainS18
+ROOT = "./datasets/mrbrains_full_2018/"  # BASE PATH TO MRBrainS18
 LABEL = "Cerebellum"  # LABEL TO TRAIN FOR
 EPOCHS = 400  # NUMBER OF EPOCHS
 

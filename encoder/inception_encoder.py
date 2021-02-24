@@ -28,19 +28,19 @@ def basic_naive_inception(img_input, nfilters=64, IMAGE_ORDERING='channels_first
 def encode_inception(img_input, naive=False, IMAGE_ORDERING='channels_first'):
     fn = basic_naive_inception if naive else basic_rdim_inception
 
-    layer_1 = fn(img_input, 32, IMAGE_ORDERING=IMAGE_ORDERING)
+    layer_1 = fn(img_input, 8, IMAGE_ORDERING=IMAGE_ORDERING)
 
     layer_2 = MaxPool3D(pool_size=(3, 3, 3), strides=(2, 2, 2), padding='same', data_format=IMAGE_ORDERING)(layer_1)
-    layer_2 = fn(layer_2, 64, IMAGE_ORDERING=IMAGE_ORDERING)
+    layer_2 = fn(layer_2, 16, IMAGE_ORDERING=IMAGE_ORDERING)
 
     layer_3 = MaxPool3D(pool_size=(3, 3, 3), strides=(2, 2, 2), padding='same', data_format=IMAGE_ORDERING)(layer_2)
-    layer_3 = fn(layer_3, 128, IMAGE_ORDERING=IMAGE_ORDERING)
+    layer_3 = fn(layer_3, 32, IMAGE_ORDERING=IMAGE_ORDERING)
 
     layer_4 = MaxPool3D(pool_size=(3, 3, 3), strides=(2, 2, 2), padding='same', data_format=IMAGE_ORDERING)(layer_3)
-    layer_4 = fn(layer_4, 256, IMAGE_ORDERING=IMAGE_ORDERING)
+    layer_4 = fn(layer_4, 64, IMAGE_ORDERING=IMAGE_ORDERING)
 
     layer_5 = MaxPool3D(pool_size=(3, 3, 3), strides=(2, 2, 2), padding='same', data_format=IMAGE_ORDERING)(layer_4)
-    layer_5 = fn(layer_5, 512, IMAGE_ORDERING=IMAGE_ORDERING)
+    layer_5 = fn(layer_5, 128, IMAGE_ORDERING=IMAGE_ORDERING)
 
     return [layer_1, layer_2, layer_3, layer_4, layer_5]
 
