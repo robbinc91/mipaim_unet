@@ -1,25 +1,25 @@
 import tensorflow as tf
-
-
-
 from model import inception_unet
 from utils import *
 import pickle
 import keras
-
 from common import *
+
 
 
 if __name__ == '__main__':
     tf.compat.v1.enable_eager_execution()
 
-
     model_ = inception_unet()
-    model_.compile('adam', dice_loss, [dice_coefficient])
+
+    model_.compile(optimizer='adam',
+                   loss=dice_loss,
+                   metrics=[dice_coefficient])
     model_.summary()
 
-    # from keras.utils.vis_utils import plot_model
+    # exit(0)
 
+    # from keras.utils.vis_utils import plot_model
     # plot_model(model_, to_file='model_plot.png', show_shapes=True)
 
     t1_paths, seg_paths = mrbrains2018_data_train(ROOT)
