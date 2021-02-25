@@ -49,7 +49,7 @@ def decode(inputs, outputs, conv_21, conv_32, IMAGE_ORDERING='channels_first'):
 
     if inputs['t1_input'] is not None:
         inputs_array.append(inputs['t1_input'])
-        outputs_array.append(outputs['t1_input'])
+        outputs_array.append(outputs['t1_output'])
         conv_21_array.append(conv_21['conv_21_t1'])
         conv_32_array.append(conv_32['conv_32_t1'])
     if inputs['flair_input'] is not None:
@@ -64,7 +64,7 @@ def decode(inputs, outputs, conv_21, conv_32, IMAGE_ORDERING='channels_first'):
         conv_32_array.append(conv_32['conv_32_IR'])
 
     ## concatenate
-    concat_all = Concatenate(axis=1)(outputs_array)
+    concat_all = Concatenate(axis=1)(outputs_array) if len(outputs_array) > 1 else outputs_array[0]
     conv_all = Conv3D(filters=64, kernel_size=(3, 3, 3), padding='same', activation='relu', name='CONV3D_all', data_format=IMAGE_ORDERING)(concat_all)
 
     ## decode
