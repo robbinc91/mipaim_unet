@@ -40,7 +40,7 @@ if __name__ == '__main__':
     X_val = histeq(to_uint8(get_data_with_skull_scraping(t1_val)))[None, None, ...]
     y_val = np.array(get_data(seg_val) == label).astype(np.uint8)[None, ...]
 
-    early_stop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_dice_loss', patience=10, restore_best_weights=True)
+    early_stop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 
     history = model_.fit(x=X, y=y, validation_data=(X_val, y_val), epochs=EPOCHS, batch_size=1,
                          callbacks=[keras.callbacks.ModelCheckpoint(
