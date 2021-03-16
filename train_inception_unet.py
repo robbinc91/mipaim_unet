@@ -40,6 +40,8 @@ if __name__ == '__main__':
     X_val = histeq(to_uint8(get_data_with_skull_scraping(t1_val)))[None, None, ...]
     y_val = np.array(get_data(seg_val) == label).astype(np.uint8)[None, ...]
 
+    early_stop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_dice_loss', patience=10, restore_best_weights=True)
+
     history = model_.fit(x=X, y=y, validation_data=(X_val, y_val), epochs=EPOCHS, batch_size=1,
                          callbacks=[keras.callbacks.ModelCheckpoint(
                              'weights/unet_3d_inception/label' + str(label) + '/Model.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
@@ -49,7 +51,7 @@ if __name__ == '__main__':
                              save_weights_only=False,
                              mode='max',
                              period=1
-                         )])
+                         ), early_stop_callback])
     with open('history/unet_3d_inception_trainHistoryDict' + str(label) + '.pickle', 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
 

@@ -1,7 +1,7 @@
-from keras.layers import Conv3D, Conv3DTranspose, Concatenate, UpSampling3D
+from keras.layers import Conv3D, Conv3DTranspose, Concatenate, UpSampling3D, Dropout
 from encoder import basic_rdim_inception, basic_naive_inception
 
-def decode_inception(layers, naive=False, IMAGE_ORDERING='channels_first'):
+def decode_inception(layers, naive=False, IMAGE_ORDERING='channels_first', use_droput=True):
     fn = basic_naive_inception if naive else basic_rdim_inception
 
     layer_6 = fn(layers[4], 128, IMAGE_ORDERING=IMAGE_ORDERING)
@@ -27,6 +27,9 @@ def decode_inception(layers, naive=False, IMAGE_ORDERING='channels_first'):
     layer_10 = fn(layer_10, 8, IMAGE_ORDERING=IMAGE_ORDERING)
 
     output = Conv3D(filters=1, kernel_size=(1, 1, 1), strides=(1, 1, 1), padding='same', data_format=IMAGE_ORDERING)(layer_10)
+
+    if use_droput == True:
+        output = Dropout(.2)(output)
 
     return output
 
