@@ -2,3 +2,5 @@
 datasets
 .picasa.ini
 __pycache__
+weights
+history
