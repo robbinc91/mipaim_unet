@@ -6,18 +6,22 @@ from common import *
 
 if __name__ == '__main__':
 
-    model_ = vnet(t1=True, FLAIR=True, IR=True)
+    #model_ = vnet(t1=True, FLAIR=None, IR=None)
 
-    model_.compile('adam', dice_loss, [dice_coefficient])
-    model_.summary()
+    #model_.compile('adam', dice_loss, [dice_coefficient])
+    #model_.summary()
 
-    from keras.utils.vis_utils import plot_model
+    #exit(0)
 
-    plot_model(model_, to_file='3d_unet_model_plot_t1_flair_ir.png', show_shapes=True)
-    exit(0)
+    #from keras.utils.vis_utils import plot_model
+
+    #plot_model(model_, to_file='3d_unet_model_plot_t1_flair_ir.png', show_shapes=True)
+
 
     T1path, FLAIRpath, IRpath, segpath = data_train(root=ROOT)  # TRAIN IMAGES
     T1_val, FLAIR_val, IR_val, segm_val = data_val(root=ROOT)  # TEST IMAGES
+    FLAIRpath = None
+    IRpath = None
 
     if label in [1, 3, 5]:
         print("TRAINING ON THRESHOLDING MODEL...")
@@ -61,7 +65,7 @@ if __name__ == '__main__':
         model_.summary()
         history = model_.fit(X, y, validation_data=(X_val, y_val), epochs=EPOCHS,
                              callbacks=[keras.callbacks.ModelCheckpoint(
-                                 'weights/label' + str(label) + '/Model.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
+                                 'weights/unet_3d_t1/label' + str(label) + '/Model.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
                                  monitor='val_dice_coefficient',
                                  verbose=0,
                                  save_best_only=True,
@@ -120,6 +124,9 @@ if __name__ == '__main__':
 
             EVAL_ARRAY.append(X_FLAIR_val)
             EVAL_ARRAY.append(X_IR_val)
+        else:
+            TRAIN_ARRAY = TRAIN_ARRAY[0]
+            EVAL_ARRAY = EVAL_ARRAY[0]
 
         HAS_FLAIR = True if FLAIRpath is not None else None
         HAS_IR = True if IRpath is not None else None
@@ -133,7 +140,7 @@ if __name__ == '__main__':
 
         history = model_.fit(TRAIN_ARRAY, y=y, validation_data=(EVAL_ARRAY, y_val),
                              epochs=EPOCHS, callbacks=[keras.callbacks.ModelCheckpoint(
-                'weights/3d_unet/label' + str(label) + '/Model.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
+                'weights/unet_3d_t1/label' + str(label) + '/Model.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
                 monitor='val_dice_coefficient',
                 verbose=0,
                 save_best_only=True,
@@ -142,12 +149,6 @@ if __name__ == '__main__':
                 period=1
             )])
 
-
-    '''
-    print("FINISHED TRAINING...")
-    print("Saving training history")
-    with open('history/trainHistoryDict' + str(label) + '.pickle', 'wb') as file_pi:
+    with open('history/unet_3d_t1_trainHistoryDict' + str(label) + '.pickle', 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
-    print("DONE")
-    '''
 
