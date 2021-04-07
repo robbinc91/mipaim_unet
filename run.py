@@ -3,7 +3,7 @@ from utils.preprocess import *
 from keras.models import load_model
 
 def inception_unet_predict(t1_path, label, output_path=None):
-    model = load_model('weights/unet_3d-label' + str(label) + "/best.h5",
+    model = load_model('weights/unet_3d_inception/label' + str(label) + "/best.h5",
                        custom_objects={'dice_coefficient': dice_coefficient, 'dice_loss': dice_loss})
     input = histeq(to_uint8(get_data_with_skull_scraping(t1_path)))[None, None, ...]
     output = model.predict(input)
