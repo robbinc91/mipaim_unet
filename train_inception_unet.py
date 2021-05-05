@@ -10,7 +10,9 @@ from common import *
 if __name__ == '__main__':
     tf.compat.v1.enable_eager_execution()
 
-    model_ = inception_unet()
+    #model_ = inception_unet()
+    model_ = inception_unet(shape=(1, 192, 224, 192))
+
 
     model_.compile(optimizer='adam',
                    loss=dice_loss,
@@ -19,8 +21,10 @@ if __name__ == '__main__':
 
     # exit(0)
 
-    # from keras.utils.vis_utils import plot_model
-    # plot_model(model_, to_file='model_plot.png', show_shapes=True)
+    from keras.utils.vis_utils import plot_model
+    plot_model(model_, to_file='mni_space_model_plot.png', show_shapes=True)
+
+    exit(0)
 
     t1_paths, seg_paths = mrbrains2018_data_train(ROOT)
 

@@ -1,7 +1,7 @@
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
-
+import SimpleITK as sitk
 
 def visualize(PATH, View="Axial_View", cmap=None):
     """
@@ -123,3 +123,31 @@ def data_val(root="./"):
     segm_val = root + 'training/148/segm.nii.gz'
 
     return T1_val, FLAIR_val, IR_val, segm_val
+
+
+def read_batch(in_dir, save_all=True):
+    '''
+    :param in_dir: directory where the .dcm files are stored
+    :param save_all: True if we want to store the nii files to the same origin dir
+    :return: array of .nii images
+    '''
+    reader = sitk.ImageSeriesReader()
+
+    ids = reader.GetGDCMSeriesIDs(in_dir)
+
+    images = []
+
+    for i in ids:
+        dicom_names = reader.GetGDCMSeriesFileNames(in_dir, i)
+        reader.SetFileNames(dicom_names)
+        reader.MetaDataDictionaryArrayUpdateOn()
+        reader.LoadPrivateTagsOn()
+        image = reader.Execute()
+        images.append(image)
+        if save_all == True:
+            series_name = reader.GetMetaData(0, '0008|103e')
+            sitk.WriteImage(image, '{0}{1}.nii'.format(in_dir, series_name))
+
+    # dicom_names = reader.GetGDCMSeriesFileNames(in_dir)
+
+    return images

@@ -4,7 +4,8 @@ from utils import *
 ROOT = "./datasets/mrbrains_full_2018/"  # BASE PATH TO MRBrainS18
 LABEL = "Cerebellum"  # LABEL TO TRAIN FOR
 EPOCHS = 400  # NUMBER OF EPOCHS
-
+HAMMERS_ROOT = './datasets/hammers_full_2017/'
+IMG_ROOT = './datasets/'
 
 
 

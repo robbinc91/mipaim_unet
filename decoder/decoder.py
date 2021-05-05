@@ -1,32 +1,32 @@
 from keras.layers import Conv3D, Conv3DTranspose, Concatenate, UpSampling3D, Dropout
 from encoder import basic_rdim_inception, basic_naive_inception
 
-def decode_inception(layers, naive=False, IMAGE_ORDERING='channels_first', use_droput=True):
+def decode_inception(layers, naive=False, IMAGE_ORDERING='channels_first', use_droput=False):
     fn = basic_naive_inception if naive else basic_rdim_inception
 
-    layer_6 = fn(layers[4], 128, IMAGE_ORDERING=IMAGE_ORDERING)
+    layer_6 = fn(layers[4], 64, IMAGE_ORDERING=IMAGE_ORDERING)
     # layer_6 =UpSampling3D(size=(3, 3, 3))(layer_6)
-    layer_6 = Conv3DTranspose(filters=64, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same', data_format=IMAGE_ORDERING)(layer_6)
+    layer_6 = Conv3DTranspose(filters=64, kernel_size=(3, 3, 3), activation='relu', strides=(2, 2, 2), padding='same', data_format=IMAGE_ORDERING)(layer_6)
 
     layer_7 = Concatenate(axis=1)([layers[3], layer_6])
-    layer_7 = fn(layer_7, 64, IMAGE_ORDERING=IMAGE_ORDERING)
+    layer_7 = fn(layer_7, 32, IMAGE_ORDERING=IMAGE_ORDERING)
     # layer_7 = UpSampling3D(size=(3, 3, 3))(layer_7)
-    layer_7 = Conv3DTranspose(filters=32, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same', data_format=IMAGE_ORDERING)(layer_7)
+    layer_7 = Conv3DTranspose(filters=32, kernel_size=(3, 3, 3), activation='relu', strides=(2, 2, 2), padding='same', data_format=IMAGE_ORDERING)(layer_7)
 
     layer_8 = Concatenate(axis=1)([layers[2], layer_7])
-    layer_8 = fn(layer_8, 32, IMAGE_ORDERING=IMAGE_ORDERING)
+    layer_8 = fn(layer_8, 16, IMAGE_ORDERING=IMAGE_ORDERING)
     # layer_8 = UpSampling3D(size=(3, 3, 3))(layer_8)
-    layer_8 = Conv3DTranspose(filters=16, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same', data_format=IMAGE_ORDERING)(layer_8)
+    layer_8 = Conv3DTranspose(filters=16, kernel_size=(3, 3, 3), activation='relu', strides=(2, 2, 2), padding='same', data_format=IMAGE_ORDERING)(layer_8)
 
     layer_9 = Concatenate(axis=1)([layers[1], layer_8])
-    layer_9 = fn(layer_9, 16, IMAGE_ORDERING=IMAGE_ORDERING)
+    layer_9 = fn(layer_9, 8, IMAGE_ORDERING=IMAGE_ORDERING)
     # layer_9 = UpSampling3D(size=(3, 3, 3))(layer_9)
-    layer_9 = Conv3DTranspose(filters=8, kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='same', data_format=IMAGE_ORDERING)(layer_9)
+    layer_9 = Conv3DTranspose(filters=8, kernel_size=(3, 3, 3), activation='relu', strides=(2, 2, 2), padding='same', data_format=IMAGE_ORDERING)(layer_9)
 
     layer_10 = Concatenate(axis=1)([layers[0], layer_9])
     layer_10 = fn(layer_10, 8, IMAGE_ORDERING=IMAGE_ORDERING)
 
-    output = Conv3D(filters=1, kernel_size=(1, 1, 1), strides=(1, 1, 1), padding='same', data_format=IMAGE_ORDERING)(layer_10)
+    output = Conv3D(filters=1, kernel_size=(1, 1, 1), activation='relu', strides=(1, 1, 1), padding='same', data_format=IMAGE_ORDERING)(layer_10)
 
     if use_droput == True:
         output = Dropout(.2)(output)
