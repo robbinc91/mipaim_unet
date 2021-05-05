@@ -51,7 +51,7 @@ if __name__ == '__main__':
                              save_weights_only=False,
                              mode='max',
                              period=1
-                         ), early_stop_callback])
+                         )])
     with open('history/unet_3d_inception_trainHistoryDict' + str(label) + '.pickle', 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
 
