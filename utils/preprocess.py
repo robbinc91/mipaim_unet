@@ -4,6 +4,7 @@ import numpy as np
 from deepbrain import Extractor
 import SimpleITK as sitk
 from math import pi
+import nibabel.processing
 
 
 def get_data(path):
@@ -159,3 +160,7 @@ def applyTransform(fixed_path, img_path, transform_path):
     resampled = resampler.Execute(moving)
 
     return resampled
+
+
+def conform_image(path, shape, pixel_sp):
+    return nibabel.processing.conform(nib.load(path), shape, pixel_sp)

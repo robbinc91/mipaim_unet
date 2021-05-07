@@ -64,10 +64,23 @@ def mrbrains2018_data_train(root='./', t1=True, flair=False, ir=False):
 
     return T1path, segpath
 
+def hammers_2017_data_train(root):
+    T1Path = [root + 'pre/' + 'a{:02d}-reg-res.nii.gz'.format(i) for i in range(1, 19)]
+    segpath = [root + 'pre/' + 'a{:02d}-reg-seg-res.nii.gz'.format(i) for i in range(1, 19)]
+
+    return T1Path, segpath
+
 def mrbrains2018_data_val(root="./", t1=True, flair=False, ir=False):
 
     T1_val = root + 'training/148/pre/reg_T1.nii.gz'
     segm_val = root + 'training/148/segm.nii.gz'
+
+    return T1_val, segm_val
+
+
+def hammers_2017_data_val(root):
+    T1_val = [root + 'pre/' + 'a{:02d}-reg-res.nii.gz'.format(i) for i in range(19, 25)]
+    segm_val = [root + 'pre/' + 'a{:02d}-reg-seg-res.nii.gz'.format(i) for i in range(19, 25)]
 
     return T1_val, segm_val
 

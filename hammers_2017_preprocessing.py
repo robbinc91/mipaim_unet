@@ -3,6 +3,7 @@ from common import *
 import SimpleITK as sitk
 
 
+
 def do_preprocess(root):
     for i in range(1, 31):
         _name = 'a{:02d}'.format(i)
@@ -18,10 +19,19 @@ def do_preprocess(root):
         #sitk.WriteImage(resampled, root + 'pre/' + _name + '-reg.nii.gz')
 
         # labels resampling
-        resampled_labels = applyTransform(IMG_ROOT + 'registration/MNI152_T1_1mm.nii.gz',
-                                          root + 'images/' + _name + '-seg.nii.gz',
-                                          root + 'pre/' + _name + '-transform.tfm')
-        sitk.WriteImage(resampled_labels, root + 'pre/' + _name + '-reg-seg.nii.gz')
+        #resampled_labels = applyTransform(IMG_ROOT + 'registration/MNI152_T1_1mm.nii.gz',
+        #                                  root + 'images/' + _name + '-seg.nii.gz',
+        #                                  root + 'pre/' + _name + '-transform.tfm')
+        #sitk.WriteImage(resampled_labels, root + 'pre/' + _name + '-reg-seg.nii.gz')
+
+        # Image and labels resample
+        resized_img = conform_image(root + 'pre/' + _name + '-reg.nii.gz', (192, 224, 192), (1., 1., 1.))
+        nib.save(resized_img, root + 'pre/' + _name + '-reg-res.nii.gz')
+
+        resized_labels = conform_image(root + 'pre/' + _name + '-reg-seg.nii.gz', (192, 224, 192), (1., 1., 1.))
+        nib.save(resized_labels, root + 'pre/' + _name + '-reg-seg-res.nii.gz')
+
+
 
 
 
