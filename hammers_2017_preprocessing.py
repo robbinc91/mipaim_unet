@@ -13,9 +13,15 @@ def do_preprocess(root):
         # sitk.WriteImage(log_bias_field, root + 'pre/' + _name + '-lbf.nii.gz')
 
         # Image Registration
-        transform, resampled = exhautive_registration(IMG_ROOT + 'registration/MNI152_T1_1mm.nii.gz', root + 'pre/' + _name + '-bfc.nii.gz')
-        sitk.WriteTransform(transform, root + 'pre/' + _name + '-transform.tfm')
-        sitk.WriteImage(resampled, root + 'pre/' + _name + '-reg.nii.gz')
+        #transform, resampled = exhautive_registration(IMG_ROOT + 'registration/MNI152_T1_1mm.nii.gz', root + 'pre/' + _name + '-bfc.nii.gz')
+        #sitk.WriteTransform(transform, root + 'pre/' + _name + '-transform.tfm')
+        #sitk.WriteImage(resampled, root + 'pre/' + _name + '-reg.nii.gz')
+
+        # labels resampling
+        resampled_labels = applyTransform(IMG_ROOT + 'registration/MNI152_T1_1mm.nii.gz',
+                                          root + 'images/' + _name + '-seg.nii.gz',
+                                          root + 'pre/' + _name + '-transform.tfm')
+        sitk.WriteImage(resampled_labels, root + 'pre/' + _name + '-reg-seg.nii.gz')
 
 
 

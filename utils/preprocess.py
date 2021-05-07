@@ -144,3 +144,18 @@ def exhautive_registration(fixedImageFilter, movingImageFile):
 
     return transform, resampled
 
+def applyTransform(fixed_path, img_path, transform_path):
+    moving = sitk.ReadImage(img_path, sitk.sitkFloat32)
+    fixed = sitk.ReadImage(fixed_path, sitk.sitkFloat32)
+    trf = sitk.ReadTransform(transform_path)
+
+
+    resampler = sitk.ResampleImageFilter()
+    resampler.SetReferenceImage(fixed)
+    resampler.SetInterpolator(sitk.sitkLinear)
+    resampler.SetDefaultPixelValue(1)
+    resampler.SetTransform(trf)
+
+    resampled = resampler.Execute(moving)
+
+    return resampled
