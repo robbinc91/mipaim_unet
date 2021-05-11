@@ -21,60 +21,33 @@ if __name__ == '__main__':
 
     # exit(0)
 
-    from keras.utils.vis_utils import plot_model
-    plot_model(model_, to_file='mni_space_model_plot.png', show_shapes=True)
+    #from keras.utils.vis_utils import plot_model
+    #plot_model(model_, to_file='mni_space_model_plot.png', show_shapes=True)
 
-    exit(0)
+    #exit(0)
 
-    #t1_paths, seg_paths = mrbrains2018_data_train(ROOT)
-    t1_paths, seg_paths = hammers_2017_data_train(HAMMERS_ROOT)
-
-    #t1_val, seg_val = mrbrains2018_data_val(ROOT)
-    t1_val_paths, seg_val_paths = hammers_2017_data_val(HAMMERS_ROOT)
+    t1_paths, seg_paths = hammers_2017_data_preprocessed_train(HAMMERS_ROOT)
 
     X = []
     y = []
 
-    t1_val = []
-    seg_val = []
-
     for t1_, seg_ in zip(t1_paths, seg_paths):
-        T1 = histeq(to_uint8(get_data_with_skull_scraping(t1_)))
+        #T1 = histeq(to_uint8(get_data_with_skull_scraping(t1_)))
+        T1 = to_uint8(get_data(t1_))
         X.append(T1[None, ...])
 
         #y.append(np.array(get_data(seg_) == label).astype(np.uint8)[None, ...])
-        y.append(np.array(get_data(seg_)).astype(np.uint8)[None, ...])
+        y_ = to_uint8(get_data(seg_))
+        y.append(y_[None, ...])
 
     X = np.array(X)
     y = np.array(y)
 
-    for t1_val_, seg_val_ in zip(t1_val_paths, seg_val_paths):
-        T1_val_ = histeq(to_uint8(get_data_with_skull_scraping(t1_val_)))[None, None, ...]
-        t1_val.append(T1_val_)
-
-        #seg_val.append(np.array(get_data(seg_val) == label).astype(np.uint8)[None, ...])
-        seg_val.append(np.array(get_data(seg_val)).astype(np.uint8)[None, ...])
-
-    t1_val = np.array(t1_val)
-    seg_val = np.array(seg_val)
-
-    #X_val = histeq(to_uint8(get_data_with_skull_scraping(t1_val)))[None, None, ...]
-    #y_val = np.array(get_data(seg_val) == label).astype(np.uint8)[None, ...]
-
     early_stop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 
-    #history = model_.fit(x=X, y=y, validation_data=(t1_val, seg_val), epochs=EPOCHS, batch_size=1,
-    #                     callbacks=[keras.callbacks.ModelCheckpoint(
-    #                         'weights/unet_3d_inception/label' + str(label) + '/Model.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
-    #                         monitor='val_dice_coefficient',
-    #                         verbose=1,
-    #                         save_best_only=True,
-    #                         save_weights_only=False,
-    #                         mode='max',
-    #                         period=1
-    #                     )])
+    print('start fitting')
 
-    history = model_.fit(x=X, y=y, validation_data=(t1_val, seg_val), epochs=EPOCHS, batch_size=1,
+    history = model_.fit(x=X, y=y, validation_split=0.25, epochs=EPOCHS, batch_size=1,
                          callbacks=[keras.callbacks.ModelCheckpoint(
                              'weights/unet_3d_inception/all/Model.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
                              monitor='val_dice_coefficient',

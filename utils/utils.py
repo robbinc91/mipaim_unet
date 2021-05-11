@@ -65,8 +65,14 @@ def mrbrains2018_data_train(root='./', t1=True, flair=False, ir=False):
     return T1path, segpath
 
 def hammers_2017_data_train(root):
-    T1Path = [root + 'pre/' + 'a{:02d}-reg-res.nii.gz'.format(i) for i in range(1, 19)]
-    segpath = [root + 'pre/' + 'a{:02d}-reg-seg-res.nii.gz'.format(i) for i in range(1, 19)]
+    T1Path = [root + 'pre/' + 'a{:02d}-reg-res.nii.gz'.format(i) for i in range(1, 25)]
+    segpath = [root + 'pre/' + 'a{:02d}-reg-seg-res.nii.gz'.format(i) for i in range(1, 25)]
+
+    return T1Path, segpath
+
+def hammers_2017_data_preprocessed_train(root):
+    T1Path = [root + 'final/' + 'a{:02d}-pre.nii.gz'.format(i) for i in range(1, 25)]
+    segpath = [root + 'final/' + 'a{:02d}-cerebellum.nii.gz'.format(i) for i in range(1, 25)]
 
     return T1Path, segpath
 
