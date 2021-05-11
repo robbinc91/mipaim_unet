@@ -25,10 +25,10 @@ def vnet(t1, FLAIR=None, IR=None, IMAGE_ORDERING='channels_first', shape=(1, 240
     return Model(inputs, output)
 
 
-def inception_unet(shape=(1, 240, 240, 48), IMAGE_ORDERING='channels_first'):
+def inception_unet(shape=(1, 240, 240, 48), IMAGE_ORDERING='channels_first', only_3x3_filters=False, dropout=None):
     input = Input(shape=shape)
-    encoded_layers = encode_inception(input, False, IMAGE_ORDERING=IMAGE_ORDERING)
-    output = decode_inception(encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING)
+    encoded_layers = encode_inception(input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+    output = decode_inception(encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, dropout=dropout)
 
 
     return Model(input, output)

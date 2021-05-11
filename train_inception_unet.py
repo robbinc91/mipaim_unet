@@ -11,7 +11,8 @@ if __name__ == '__main__':
     tf.compat.v1.enable_eager_execution()
 
     #model_ = inception_unet()
-    model_ = inception_unet(shape=(1, 192, 224, 192))
+    model_ = inception_unet(shape=MNI_SHAPE, only_3x3_filters=ONLY_3X3_FILTERS, dropout=0.01)
+    #model_ = inception_unet(shape=(1, 192, 224))
 
 
     model_.compile(optimizer='adam',
@@ -19,10 +20,10 @@ if __name__ == '__main__':
                    metrics=[dice_coefficient])
     model_.summary()
 
-    # exit(0)
+    exit(0)
 
     from keras.utils.vis_utils import plot_model
-    plot_model(model_, to_file='mni_space_model_plot.png', show_shapes=True)
+    plot_model(model_, to_file='small_mni_space_model_plot.png', show_shapes=True)
 
     exit(0)
 

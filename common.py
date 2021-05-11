@@ -8,6 +8,10 @@ HAMMERS_ROOT = './datasets/hammers_full_2017/'
 IMG_ROOT = './datasets/'
 
 
+ONLY_3X3_FILTERS = True
+MNI_SHAPE = (1, 192, 224, 192)
+MRBRAINS_SHAPE = (1, 240, 240, 48)
+
 
 labels = {
     "Cortical gray matter": 1,
