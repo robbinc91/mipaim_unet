@@ -10,6 +10,12 @@ IMG_ROOT = './datasets/'
 
 ONLY_3X3_FILTERS = True
 MNI_SHAPE = (1, 192, 224, 192)
+x_idx_range = slice(32, 160)
+y_idx_range = slice(30, 142)
+z_idx_range = slice(10, 90)
+REDUCED_MNI_SHAPE = (1, 128, 112, 80)
+
+
 MRBRAINS_SHAPE = (1, 240, 240, 48)
 
 

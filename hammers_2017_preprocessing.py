@@ -50,15 +50,21 @@ def do_preprocess(root):
         #nibabel.save(seg, root + 'final/' + _name + '-labels.nii.gz')
 
         # Mask with only cerebellum
-        seg = nibabel.load(root + 'pre/' + _name + '-reg-seg-res.nii.gz')
+        #seg = nibabel.load(root + 'pre/' + _name + '-reg-seg-res.nii.gz')
         #cerebl = np.array(seg.get_data() == 17).astype(np.uint8) + np.array(seg.get_data() == 18).astype(np.uint8)
         #cerebl = nibabel.Nifti1Image(cerebl, seg.affine)
         #nibabel.save(cerebl, root + 'final/' + _name + '-cerebellum.nii.gz')
 
         # Mask with only brainstem
-        bst = np.array(seg.get_data() == 19).astype(np.uint8)
-        bst = nibabel.Nifti1Image(bst, seg.affine)
-        nibabel.save(bst, root + 'final/' + _name + '-brainstem.nii.gz')
+        #bst = np.array(seg.get_data() == 19).astype(np.uint8)
+        #bst = nibabel.Nifti1Image(bst, seg.affine)
+        #nibabel.save(bst, root + 'final/' + _name + '-brainstem.nii.gz')
+
+        # Reduce image shape
+        img = nib.load(root + 'final/' + _name + '-brainstem.nii.gz')
+        roi = np.asarray(img.dataobj[x_idx_range, y_idx_range, z_idx_range])
+        cropped_img = nib.Nifti1Image(roi, affine=img.affine)
+        nib.save(cropped_img, root + 'reduced/' + _name + '-brainstem.nii.gz')
 
 
 

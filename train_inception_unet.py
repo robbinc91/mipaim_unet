@@ -11,7 +11,8 @@ if __name__ == '__main__':
     tf.compat.v1.enable_eager_execution()
 
     #model_ = inception_unet()
-    model_ = inception_unet(shape=MNI_SHAPE, only_3x3_filters=ONLY_3X3_FILTERS, dropout=0.01)
+    #model_ = inception_unet(shape=MNI_SHAPE, only_3x3_filters=ONLY_3X3_FILTERS, dropout=0.01)
+    model_ = inception_unet(shape=REDUCED_MNI_SHAPE, only_3x3_filters=ONLY_3X3_FILTERS, dropout=0.01)
     #model_ = inception_unet(shape=(1, 192, 224))
 
 
@@ -23,8 +24,8 @@ if __name__ == '__main__':
     exit(0)
 
 
-    from keras.utils.vis_utils import plot_model
-    plot_model(model_, to_file='small_mni_space_model_plot.png', show_shapes=True)
+    #from keras.utils.vis_utils import plot_model
+    #plot_model(model_, to_file='small_mni_space_model_plot.png', show_shapes=True)
 
 
     #exit(0)
@@ -46,7 +47,10 @@ if __name__ == '__main__':
     X = np.array(X)
     y = np.array(y)
 
-    early_stop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+    early_stop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
+                                                           patience=10,
+                                                           restore_best_weights=True,
+                                                           baseline=0.07)
 
     print('start fitting')
 
@@ -59,7 +63,7 @@ if __name__ == '__main__':
                              save_weights_only=False,
                              mode='max',
                              period=1
-                         )])
+                         ), early_stop_callback])
     with open('history/unet_3d_inception_trainHistoryDict' + str(label) + '.pickle', 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
 
