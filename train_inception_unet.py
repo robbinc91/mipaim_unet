@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     #model_ = inception_unet()
     #model_ = inception_unet(shape=MNI_SHAPE, only_3x3_filters=ONLY_3X3_FILTERS, dropout=0.01)
-    model_ = inception_unet(shape=REDUCED_MNI_SHAPE, only_3x3_filters=ONLY_3X3_FILTERS, dropout=0.01)
+    model_ = inception_unet(shape=REDUCED_MNI_SHAPE, only_3x3_filters=ONLY_3X3_FILTERS)
     #model_ = inception_unet(shape=(1, 192, 224))
 
 
@@ -21,7 +21,7 @@ if __name__ == '__main__':
                    metrics=[dice_coefficient])
     model_.summary()
 
-    exit(0)
+    #exit(0)
 
 
     #from keras.utils.vis_utils import plot_model
@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     #exit(0)
 
-    t1_paths, seg_paths = hammers_2017_data_preprocessed_train(HAMMERS_ROOT)
+    t1_paths, seg_paths = hammers_2017_data_preprocessed_train_reduced(HAMMERS_ROOT)
 
     X = []
     y = []

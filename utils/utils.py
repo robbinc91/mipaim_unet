@@ -76,6 +76,12 @@ def hammers_2017_data_preprocessed_train(root):
 
     return T1Path, segpath
 
+def hammers_2017_data_preprocessed_train_reduced(root):
+    T1Path = [root + 'reduced/' + 'a{:02d}-pre.nii.gz'.format(i) for i in range(1, 25)]
+    segpath = [root + 'reduced/' + 'a{:02d}-cerebellum.nii.gz'.format(i) for i in range(1, 25)]
+
+    return T1Path, segpath
+
 def mrbrains2018_data_val(root="./", t1=True, flair=False, ir=False):
 
     T1_val = root + 'training/148/pre/reg_T1.nii.gz'
