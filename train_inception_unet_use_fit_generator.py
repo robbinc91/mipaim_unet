@@ -21,31 +21,9 @@ if __name__ == '__main__':
                    metrics=[dice_coefficient])
     model_.summary()
 
-    #exit(0)
-
-
-    #from keras.utils.vis_utils import plot_model
-    #plot_model(model_, to_file='small_mni_space_model_plot.png', show_shapes=True)
-
-
-    #exit(0)
-
-    t1_paths, seg_paths = hammers_2017_data_preprocessed_train_reduced(HAMMERS_ROOT)
-
-    X = []
-    y = []
-
-    for t1_, seg_ in zip(t1_paths, seg_paths):
-        #T1 = histeq(to_uint8(get_data_with_skull_scraping(t1_)))
-        T1 = to_uint8(get_data(t1_))
-        X.append(T1[None, ...])
-
-        #y.append(np.array(get_data(seg_) == label).astype(np.uint8)[None, ...])
-        y_ = to_uint8(get_data(seg_))
-        y.append(y_[None, ...])
-
-    X = np.array(X)
-    y = np.array(y)
+    partition, outputs = create_hammers_partitions()
+    train_generator = DataGenerator(partition['train'], outputs, batch_size=1, root=HAMMERS_ROOT, shuffle=True)
+    val_generator = DataGenerator(partition['validation'], outputs, batch_size=1, root=HAMMERS_ROOT, shuffle=True)
 
     early_stop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                            patience=10,
@@ -54,7 +32,7 @@ if __name__ == '__main__':
 
     print('start fitting')
 
-    history = model_.fit(x=X, y=y, validation_split=0.25, epochs=EPOCHS, batch_size=1,
+    history = model_.fit_generator(generator=train_generator, validation_data=val_generator, epochs=EPOCHS, use_multiprocessing=True,
                          callbacks=[keras.callbacks.ModelCheckpoint(
                              'weights/unet_3d_inception/all/Model.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
                              monitor='val_dice_coefficient',

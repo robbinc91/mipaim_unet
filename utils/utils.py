@@ -2,6 +2,8 @@ import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
 import SimpleITK as sitk
+import keras
+from utils.preprocess import to_uint8, get_data
 
 def visualize(PATH, View="Axial_View", cmap=None):
     """
@@ -176,3 +178,78 @@ def read_batch(in_dir, save_all=True):
     # dicom_names = reader.GetGDCMSeriesFileNames(in_dir)
 
     return images
+
+
+def hammers_train_partition_generator(ii, jj):
+    return ['a{:02d}-pre.nii.gz'.format(i) for i in range(ii, jj)]
+
+
+def hammers_val_partition_generator(ii, jj):
+    return ['a{:02d}-pre.nii.gz'.format(i) for i in range(ii, jj)]
+
+
+def hammers_outputs_generator(ii, jj, label):
+    return {
+        'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in range(ii, jj)
+    }
+
+
+
+
+
+def create_hammers_partitions():
+    partition = {
+        'train': hammers_train_partition_generator(1, 19),
+        'validation': hammers_val_partition_generator(19, 25)
+    }
+
+    outputs = hammers_outputs_generator(1, 25, 'cerebellum')
+
+    return partition, outputs
+
+
+class DataGenerator(keras.utils.Sequence):
+
+    def __init__(self, list_ids, outputs, batch_size=32, dim=(128, 112, 80), n_channels=1, shuffle=True, root='.'):
+        self.dim = dim
+        self.batch_size = batch_size
+        self.outputs = outputs
+        self.list_ids = list_ids
+        self.n_channels = n_channels
+        self.shuffle = shuffle
+        self.root = root
+        self.on_epoch_end()
+
+    def __len__(self):
+        return int(np.floor(len(self.list_ids) / self.batch_size))
+
+    def on_epoch_end(self):
+        self.indexes = np.arange(len(self.list_ids))
+
+        if self.shuffle is True:
+            np.random.shuffle(self.indexes)
+
+    def __getitem__(self, index):
+
+        indexes = self.indexes[index * self.batch_size: (index + 1) * self.batch_size]
+
+        list_ids_temp = [self.list_ids[k] for k in indexes]
+
+        X, y = self.__data_generation(list_ids_temp)
+
+        return X, y
+
+    def __data_generation(self, list_ids_temp):
+        X = []
+        y = []
+
+        for i, ID in enumerate(list_ids_temp):
+            X.append(to_uint8(get_data(self.root + 'reduced/' + ID))[None, ...])
+            y.append(to_uint8(get_data(self.root + 'reduced/' + self.outputs[ID]))[None, ...])
+
+        X = np.array(X)
+        y = np.array(y)
+
+        return X, y
+
+
