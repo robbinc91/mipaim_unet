@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import SimpleITK as sitk
 import keras
 from utils.preprocess import to_uint8, get_data
+import math
+
 
 def visualize(PATH, View="Axial_View", cmap=None):
     """
@@ -252,4 +254,12 @@ class DataGenerator(keras.utils.Sequence):
 
         return X, y
 
+
+
+def step_decay(epoch):
+    initial_rate = 0.1
+    drop = 0.1
+    epochs_drop = 10
+    lrate = initial_rate * math.pow(drop, math.floor((1 + epoch) / epochs_drop))
+    return lrate
 
