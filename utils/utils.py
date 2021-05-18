@@ -256,10 +256,10 @@ class DataGenerator(keras.utils.Sequence):
 
 
 
-def step_decay(epoch):
-    initial_rate = 0.1
+def step_decay(epoch, lr):
+    #initial_rate = 0.1
     drop = 0.1
     epochs_drop = 10
-    lrate = initial_rate * math.pow(drop, math.floor((1 + epoch) / epochs_drop))
+    lrate = lr * math.pow(drop, math.floor((1 + epoch) / epochs_drop))
     return lrate
 

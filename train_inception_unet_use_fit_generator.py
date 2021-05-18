@@ -31,7 +31,7 @@ if __name__ == '__main__':
                                                            baseline=0.07)
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
-        'weights/unet_3d_inception/all/model.{epoch:02d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
+        'weights/unet_3d_inception/all/model.epoch={epoch:03d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
         monitor='val_dice_coefficient',
         verbose=1,
         save_best_only=True,
@@ -41,14 +41,14 @@ if __name__ == '__main__':
     )
 
     tensorboard_callback = keras.callbacks.TensorBoard(
-        log_dir='./logs/all'
+        log_dir='logs\\all'
     )
 
     learning_rate_callback = keras.callbacks.LearningRateScheduler(step_decay)
 
     callbacks = [
         model_checkpoint_callback,
-        early_stop_callback,
+        #early_stop_callback,
         tensorboard_callback,
         learning_rate_callback
     ]

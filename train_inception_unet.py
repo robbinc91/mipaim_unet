@@ -63,7 +63,7 @@ if __name__ == '__main__':
                          )
 
     tensorboard_callback = keras.callbacks.TensorBoard(
-        log_dir='./logs/all'
+        log_dir='logs/all'
     )
 
     learning_rate_callback = keras.callbacks.LearningRateScheduler(step_decay)
