@@ -2,6 +2,7 @@ import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
 import SimpleITK as sitk
+import math
 
 def visualize(PATH, View="Axial_View", cmap=None):
     """
@@ -176,3 +177,11 @@ def read_batch(in_dir, save_all=True):
     # dicom_names = reader.GetGDCMSeriesFileNames(in_dir)
 
     return images
+
+
+def step_decay(epoch):
+    initial_rate = 0.1
+    drop = 0.1
+    epochs_drop = 10
+    lrate = initial_rate * math.pow(drop, math.floor((1 + epoch) / epochs_drop))
+    return lrate
