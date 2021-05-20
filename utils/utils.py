@@ -100,6 +100,20 @@ def hammers_2017_data_val(root):
 
     return T1_val, segm_val
 
+
+def hammers_2017_data_evaluation(root):
+    T1_val = [root + 'pre/' + 'a{:02d}-reg-res.nii.gz'.format(i) for i in range(25, 31)]
+    segm_eval = [root + 'pre/' + 'a{:02d}-reg-seg-res.nii.gz'.format(i) for i in range(25, 31)]
+
+    return T1_val, segm_eval
+
+
+def hammers_2017_data_evaluation_reduced(root):
+    T1_val = [root + 'reduced/' + 'a{:02d}-pre.nii.gz'.format(i) for i in range(25, 31)]
+    segm_eval = [root + 'reduced/' + 'a{:02d}-cerebellum.nii.gz'.format(i) for i in range(25, 31)]
+
+    return T1_val, segm_eval
+
 def data_train(root="./"):
     """
     Return:
@@ -262,4 +276,5 @@ def step_decay(epoch, lr):
     epochs_drop = 10
     lrate = lr * math.pow(drop, math.floor((1 + epoch) / epochs_drop))
     return lrate
+
 
