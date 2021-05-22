@@ -22,7 +22,7 @@ def unet(t1, FLAIR=None, IR=None, IMAGE_ORDERING='channels_first', shape=(1, 240
 
     # decoder stuff
     inputs, output = decode(inputs, outputs, conv_21, conv_32, IMAGE_ORDERING)
-    return Model(inputs, output)
+    return Model(inputs[0], output)
 
 
 def inception_unet(shape=(1, 240, 240, 48), IMAGE_ORDERING='channels_first', only_3x3_filters=False, dropout=None):

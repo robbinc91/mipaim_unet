@@ -71,6 +71,8 @@ def decode(inputs, outputs, conv_21, conv_32, IMAGE_ORDERING='channels_first'):
     ## concatenate
     concat_all = Concatenate(axis=1)(outputs_array) if len(outputs_array) > 1 else outputs_array[0]
     conv_all = Conv3D(filters=64, kernel_size=(3, 3, 3), padding='same', activation='relu', name='CONV3D_all', data_format=IMAGE_ORDERING)(concat_all)
+    conv_all = Conv3D(filters=64, kernel_size=(3, 3, 3), padding='same', activation='relu', name='CONV3D_all_2',
+                      data_format=IMAGE_ORDERING)(conv_all)
 
     ## decode
     convt_1 = Conv3DTranspose(32, kernel_size=(2, 2, 2), strides=(2, 2, 2), name="CONV3DT_1", activation='relu', data_format=IMAGE_ORDERING)(conv_all)
@@ -82,6 +84,6 @@ def decode(inputs, outputs, conv_21, conv_32, IMAGE_ORDERING='channels_first'):
     conv_5 = Conv3D(filters=16, kernel_size=(3, 3, 3), padding='same', activation='relu', name="CONV3D_5",  data_format=IMAGE_ORDERING)(concat_2)
     conv_51 = Conv3D(filters=16, kernel_size=(3, 3, 3), padding='same', activation='relu', name="CONV3D_51", data_format=IMAGE_ORDERING)(conv_5)
     convt_3 = Conv3DTranspose(4, kernel_size=(2, 2, 2), strides=(2, 2, 2), name="CONV3DT_3", activation='relu', data_format=IMAGE_ORDERING)(conv_51)
-    conv_6 = Conv3D(filters=1, kernel_size=(3, 3, 3), padding='same', activation='sigmoid', name="CONV3D_6", data_format=IMAGE_ORDERING)(convt_3)
+    conv_6 = Conv3D(filters=1, kernel_size=(3, 3, 3), padding='same', activation='relu', name="CONV3D_6", data_format=IMAGE_ORDERING)(convt_3)
 
     return inputs_array, conv_6

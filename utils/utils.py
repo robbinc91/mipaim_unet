@@ -213,13 +213,13 @@ def hammers_outputs_generator(ii, jj, label):
 
 
 
-def create_hammers_partitions():
+def create_hammers_partitions(label='cerebellum'):
     partition = {
         'train': hammers_train_partition_generator(1, 19),
         'validation': hammers_val_partition_generator(19, 25)
     }
 
-    outputs = hammers_outputs_generator(1, 25, 'cerebellum')
+    outputs = hammers_outputs_generator(1, 25, label)
 
     return partition, outputs
 
