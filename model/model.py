@@ -7,7 +7,7 @@ from encoder import encode, encode_inception
 from decoder import decode, decode_inception
 
 
-def vnet(t1, FLAIR=None, IR=None, IMAGE_ORDERING='channels_first', shape=(1, 240, 240, 48)):
+def unet(t1, FLAIR=None, IR=None, IMAGE_ORDERING='channels_first', shape=(1, 240, 240, 48)):
     """
     :param t1: any
     :param FLAIR: any | None

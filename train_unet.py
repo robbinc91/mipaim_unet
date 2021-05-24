@@ -1,4 +1,4 @@
-from model import vnet, model_thresholding
+from model import unet, model_thresholding
 from utils import *
 import pickle
 import keras
@@ -6,7 +6,7 @@ from common import *
 
 if __name__ == '__main__':
 
-    #model_ = vnet(t1=True, FLAIR=None, IR=None)
+    #model_ = unet(t1=True, FLAIR=None, IR=None)
 
     #model_.compile('adam', dice_loss, [dice_coefficient])
     #model_.summary()

@@ -80,9 +80,9 @@ def hammers_2017_data_preprocessed_train(root):
 
     return T1Path, segpath
 
-def hammers_2017_data_preprocessed_train_reduced(root):
+def hammers_2017_data_preprocessed_train_reduced(root, label='cerebellum'):
     T1Path = [root + 'reduced/' + 'a{:02d}-pre.nii.gz'.format(i) for i in range(1, 25)]
-    segpath = [root + 'reduced/' + 'a{:02d}-cerebellum.nii.gz'.format(i) for i in range(1, 25)]
+    segpath = [root + 'reduced/' + 'a{:02d}-{}.nii.gz'.format(i, label) for i in range(1, 25)]
 
     return T1Path, segpath
 
@@ -108,9 +108,9 @@ def hammers_2017_data_evaluation(root):
     return T1_val, segm_eval
 
 
-def hammers_2017_data_evaluation_reduced(root):
+def hammers_2017_data_evaluation_reduced(root, label='cerebellum'):
     T1_val = [root + 'reduced/' + 'a{:02d}-pre.nii.gz'.format(i) for i in range(25, 31)]
-    segm_eval = [root + 'reduced/' + 'a{:02d}-cerebellum.nii.gz'.format(i) for i in range(25, 31)]
+    segm_eval = [root + 'reduced/' + 'a{:02d}-{}.nii.gz'.format(i, label) for i in range(25, 31)]
 
     return T1_val, segm_eval
 

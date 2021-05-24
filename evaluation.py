@@ -5,9 +5,9 @@ from utils.preprocess import *
 from keras.models import load_model
 
 
-def evaluate():
-    t1, outputs = hammers_2017_data_evaluation_reduced(HAMMERS_ROOT)
-    model = load_model('weights/unet_3d_inception/labelinc/best2.h5',
+def evaluate(label='cerebellum'):
+    t1, outputs = hammers_2017_data_evaluation_reduced(HAMMERS_ROOT, label)
+    model = load_model('weights/unet_3d_inception/labelinc/model_'+str(label)+'.h5',
                        custom_objects={'dice_coefficient': dice_coefficient, 'dice_loss': dice_loss})
 
     X = []
@@ -31,4 +31,7 @@ def evaluate():
 
 
 if __name__ == '__main__':
-    evaluate()
+    print('evaluating on cerebellum')
+    evaluate('cerebellum')
+    print('evaluating on brainstem')
+    evaluate('brainstem')
