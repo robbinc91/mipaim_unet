@@ -1,0 +1,2 @@
+python train_unet_use_fit_generator.py
+pause

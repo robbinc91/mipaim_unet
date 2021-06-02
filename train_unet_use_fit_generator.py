@@ -4,6 +4,9 @@ import pickle
 import keras
 from common import *
 
+LBL = 'cerebellum'
+#LBL = 'brainstem'
+
 if __name__ == '__main__':
     tf.compat.v1.enable_eager_execution()
     model_ = unet(t1=True, FLAIR=None, IR=None, shape=REDUCED_MNI_SHAPE)
@@ -11,12 +14,12 @@ if __name__ == '__main__':
                    loss=dice_loss,
                    metrics=[dice_coefficient])
     model_.summary()
-    from keras.utils.vis_utils import plot_model
-    plot_model(model_, to_file='small_mni_space_model_unet_plot.png', show_shapes=True)
+    #from keras.utils.vis_utils import plot_model
+    #plot_model(model_, to_file='small_mni_space_model_unet_plot.png', show_shapes=True)
 
-    exit(0)
+    #exit(0)
 
-    partition, outputs = create_hammers_partitions()
+    partition, outputs = create_hammers_partitions(LBL)
     train_generator = DataGenerator(partition['train'], outputs, batch_size=1, root=HAMMERS_ROOT, shuffle=True)
     val_generator = DataGenerator(partition['validation'], outputs, batch_size=1, root=HAMMERS_ROOT, shuffle=True)
 
@@ -45,7 +48,7 @@ if __name__ == '__main__':
         model_checkpoint_callback,
         # early_stop_callback,
         tensorboard_callback,
-        learning_rate_callback
+        #learning_rate_callback
     ]
 
     print('start fitting')
@@ -54,6 +57,6 @@ if __name__ == '__main__':
                                    use_multiprocessing=True,
                                    callbacks=callbacks)
 
-    with open('history/unet_3d_inception_trainHistoryDict' + str(label) + '.pickle', 'wb') as file_pi:
+    with open('history/unet_3d_trainHistoryDict' + str(label) + '.pickle', 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
 
