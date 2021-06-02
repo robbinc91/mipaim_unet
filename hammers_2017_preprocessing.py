@@ -3,6 +3,7 @@ import nibabel
 from utils import *
 from common import *
 import SimpleITK as sitk
+import os
 
 
 
@@ -67,9 +68,55 @@ def do_preprocess(root):
         nib.save(cropped_img, root + 'reduced/' + _name + '-brainstem.nii.gz')
 
 
+def preprocess_single_image_process(folder, name, IMG_ROOT='E:\\university\\phd\\phd\\datasets\\'):
+    path = folder + name
 
+    # BFC
+    #corrected_image, bias_field, log_bias_field = n4_bias_field_correction(path)
+    #sitk.WriteImage(corrected_image, folder + '01 - bfc.nii.gz')
+    #sitk.WriteImage(log_bias_field, folder + '01 - lbf.nii.gz')
+
+
+    # Registration
+    #transform, resampled = exhautive_registration(IMG_ROOT + 'registration/MNI152_T1_1mm.nii.gz',
+    #                                              folder + '01 - bfc.nii.gz')
+    #sitk.WriteTransform(transform, folder + '02 - transform.tfm')
+    #sitk.WriteImage(resampled, folder + '02 - reg.nii.gz')
+
+    # Resampling
+    #resized_img = conform_image(folder + '02 - reg.nii.gz', (192, 224, 192), (1., 1., 1.))
+    #nib.save(resized_img, folder + '03 - reg-res.nii.gz')
+
+    # Skull stripping
+    affine = nibabel.load(folder + '03 - reg-res.nii.gz').affine
+
+    no_skull = get_data_with_skull_scraping(folder + '03 - reg-res.nii.gz')
+    no_skull_img = nibabel.Nifti1Image(no_skull, affine)
+    nibabel.save(no_skull_img, folder + '04 - reg-res-no-skull.nii.gz')
+
+    # Histogram equalization
+    hist_equ = histeq(to_uint8(no_skull))
+    hist_eq_img = nibabel.Nifti1Image(hist_equ, affine)
+    nibabel.save(hist_eq_img, folder + '05 - reg-res-no-skull-hist-eq.nii.gz')
+
+    img = nib.load(folder + '05 - reg-res-no-skull-hist-eq.nii.gz')
+    roi = np.asarray(img.dataobj[x_idx_range, y_idx_range, z_idx_range])
+    cropped_img = nib.Nifti1Image(roi, affine=img.affine)
+    nib.save(cropped_img, folder + '06 - reg-res-no-skull-hist-eq-cropped.nii.gz')
+
+
+
+
+
+def preprocess_single_image(img_path):
+    tmp = img_path.split(os.sep)
+    folder = os.sep.join(tmp[:-1]) + os.sep
+    name = tmp[-1]
+    preprocess_single_image_process(folder, name)
 
 
 
 if __name__ == '__main__':
-    do_preprocess(HAMMERS_ROOT)
+    #do_preprocess(HAMMERS_ROOT)
+    preprocess_single_image('E:\\university\\phd\\phd\\datasets\\hammers_full_2017\\tests\\extra\\t1.nii.gz')
+    pass

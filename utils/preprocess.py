@@ -1,7 +1,7 @@
 import cv2 as cv
 import nibabel as nib
 import numpy as np
-#from deepbrain import Extractor
+from deepbrain import Extractor
 import SimpleITK as sitk
 from math import pi
 import nibabel.processing
