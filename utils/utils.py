@@ -226,7 +226,18 @@ def create_hammers_partitions(label='cerebellum'):
 
 class DataGenerator(keras.utils.Sequence):
 
-    def __init__(self, list_ids, outputs, batch_size=32, dim=(128, 112, 80), n_channels=1, shuffle=True, root='.'):
+    def __init__(self,
+                 list_ids,
+                 outputs,
+                 batch_size=32,
+                 dim=(128, 112, 80),
+                 n_channels=1,
+                 shuffle=True,
+                 root='.',
+                 rescale=1./255,
+                 shear_range=0.2,
+                 zoom_range=0.2,
+                 horizontal_flip=True):
         self.dim = dim
         self.batch_size = batch_size
         self.outputs = outputs
