@@ -12,6 +12,8 @@ def do_preprocess(root):
         _name = 'a{:02d}'.format(i)
         print('On {0}'.format(_name))
 
+        print('processing: ', _name)
+
         # Bias field Correction -----------------
         print(' Bias Field Correction...')
         corrected_image, bias_field, log_bias_field = n4_bias_field_correction(root + 'images/' + _name + '.nii.gz')

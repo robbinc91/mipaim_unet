@@ -7,6 +7,11 @@ from utils.preprocess import to_uint8, get_data
 import math
 
 
+train_prt = [i for i in range(1, 19)] + [31, 35, 36, 39] # 34
+dev_prt = [i for i in range(19, 25)] + [32, 37, 40]
+test_prt = [i for i in range(25, 31)] + [33, 38, 41, 42]
+
+
 def visualize(PATH, View="Axial_View", cmap=None):
     """
     Visualize Image
@@ -209,9 +214,23 @@ def hammers_outputs_generator(ii, jj, label):
         'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in range(ii, jj)
     }
 
+def hammers_partition_generator(rng):
+    return ['a{:02d}-pre.nii.gz'.format(i) for i in rng]
 
+def _hammers_output_generator(rng, label):
+    return {
+        'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+    }
 
+def create_hammers_partitions_new(label='cerebellum'):
+    partition = {
+        'train': hammers_partition_generator(train_prt),
+        'validation': hammers_partition_generator(dev_prt)
+    }
 
+    outputs = _hammers_output_generator(train_prt + dev_prt, label)
+
+    return partition, outputs
 
 def create_hammers_partitions(label='cerebellum'):
     partition = {

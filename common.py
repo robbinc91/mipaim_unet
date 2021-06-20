@@ -18,6 +18,9 @@ REDUCED_MNI_SHAPE = (1, 128, 112, 80)
 
 MRBRAINS_SHAPE = (1, 240, 240, 48)
 
+train_prt = [i for i in range(1, 19)] + [31, 34, 35, 36, 39]
+dev_prt = [i for i in range(19, 25)] + [32, 37, 40]
+test_prt = [i for i in range(25, 31)] + [33, 38, 41, 42]
 
 labels = {
     "Cortical gray matter": 1,

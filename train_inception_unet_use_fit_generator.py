@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     #model_ = inception_unet()
     #model_ = inception_unet(shape=MNI_SHAPE, only_3x3_filters=ONLY_3X3_FILTERS, dropout=0.01)
-    model_ = inception_unet(shape=REDUCED_MNI_SHAPE, only_3x3_filters=ONLY_3X3_FILTERS)
+    model_ = inception_unet(shape=REDUCED_MNI_SHAPE, only_3x3_filters=ONLY_3X3_FILTERS, dropout=0.2)
     #model_ = inception_unet(shape=(1, 192, 224))
 
 
@@ -21,7 +21,9 @@ if __name__ == '__main__':
                    metrics=[dice_coefficient])
     model_.summary()
 
-    partition, outputs = create_hammers_partitions()
+    #partition, outputs = create_hammers_partitions()
+    # use new MRIs
+    partition, outputs = create_hammers_partitions_new()
     train_generator = DataGenerator(partition['train'], outputs, batch_size=1, root=HAMMERS_ROOT, shuffle=True)
     val_generator = DataGenerator(partition['validation'], outputs, batch_size=1, root=HAMMERS_ROOT, shuffle=True)
 
@@ -41,7 +43,7 @@ if __name__ == '__main__':
     )
 
     tensorboard_callback = keras.callbacks.TensorBoard(
-        log_dir='logs\\all'
+        log_dir='logs/all'
     )
 
     learning_rate_callback = keras.callbacks.LearningRateScheduler(step_decay)
@@ -54,7 +56,8 @@ if __name__ == '__main__':
     ]
 
     print('start fitting')
-
+    EPOCHS = 1000
+    
     history = model_.fit_generator(generator=train_generator, validation_data=val_generator, epochs=EPOCHS, use_multiprocessing=True,
                          callbacks=callbacks)
 
