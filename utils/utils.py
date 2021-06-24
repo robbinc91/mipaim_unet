@@ -11,6 +11,9 @@ train_prt = [i for i in range(1, 19)] + [31, 34, 35, 36, 39, 43, 44]
 dev_prt = [i for i in range(19, 25)] + [32, 37, 40]
 test_prt = [i for i in range(25, 31)] + [33, 38, 41, 42]
 
+train_prt_augm = [i for i in range(1, 250)]
+dev_prt_augm = [i for i in range(25, 331)]
+
 
 def visualize(PATH, View="Axial_View", cmap=None):
     """
@@ -214,21 +217,32 @@ def hammers_outputs_generator(ii, jj, label):
         'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in range(ii, jj)
     }
 
-def hammers_partition_generator(rng):
-    return ['a{:02d}-pre.nii.gz'.format(i) for i in rng]
+def hammers_partition_generator(rng, rnga=None):
+    if rnga is None:
+      return ['a{:02d}-pre.nii.gz'.format(i) for i in rng]
+    return ['a{:02d}-pre.nii.gz'.format(i) for i in rng] + ['a{:03d}-pre.nii.gz'.format(i) for i in rng]
 
-def _hammers_output_generator(rng, label):
-    return {
-        'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
-    }
+def _hammers_output_generator(rng, rnga=None, label='cerebellum'):
+    if rnga is None:
+      return {
+          'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+      }
+    
+    ret = {
+          'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+      }
+    ret.update({
+          'a{:03d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rnga
+      })
+    return ret
 
 def create_hammers_partitions_new(label='cerebellum'):
     partition = {
-        'train': hammers_partition_generator(train_prt),
-        'validation': hammers_partition_generator(dev_prt)
+        'train': hammers_partition_generator(train_prt, train_prt_augm),
+        'validation': hammers_partition_generator(dev_prt, dev_prt_augm)
     }
 
-    outputs = _hammers_output_generator(train_prt + dev_prt, label)
+    outputs = _hammers_output_generator(train_prt + dev_prt, train_prt_augm + dev_prt_augm, label)
 
     return partition, outputs
 

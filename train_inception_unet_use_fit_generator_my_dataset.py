@@ -30,13 +30,13 @@ if __name__ == '__main__':
     early_stop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                            patience=30,
                                                            restore_best_weights=True,
-                                                           baseline=0.07)
+                                                           baseline=0.09)
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
         'weights/unet_3d_inception/20210624/model.epoch={epoch:03d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
         monitor='val_dice_coefficient',
         verbose=1,
-        save_best_only=True,
+        save_best_only=False,
         save_weights_only=False,
         mode='max',
         period=1
