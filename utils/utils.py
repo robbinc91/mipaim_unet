@@ -7,7 +7,7 @@ from utils.preprocess import to_uint8, get_data
 import math
 
 
-train_prt = [i for i in range(1, 19)] + [31, 35, 36, 39] # 34
+train_prt = [i for i in range(1, 19)] + [31, 34, 35, 36, 39, 43, 44]
 dev_prt = [i for i in range(19, 25)] + [32, 37, 40]
 test_prt = [i for i in range(25, 31)] + [33, 38, 41, 42]
 

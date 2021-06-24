@@ -7,6 +7,8 @@ EPOCHS = 400  # NUMBER OF EPOCHS
 HAMMERS_ROOT = './datasets/hammers_full_2017/'
 IMG_ROOT = './datasets/'
 
+MY_ROOT = './datasets/mine/'
+
 
 ONLY_3X3_FILTERS = True
 MNI_SHAPE = (1, 192, 224, 192)
@@ -14,6 +16,7 @@ x_idx_range = slice(32, 160)
 y_idx_range = slice(30, 142)
 z_idx_range = slice(10, 90)
 REDUCED_MNI_SHAPE = (1, 128, 112, 80)
+REDUCED_MNI_SHAPE_MINE = (1, 128, 128, 96)
 
 
 MRBRAINS_SHAPE = (1, 240, 240, 48)
