@@ -23,9 +23,9 @@ if __name__ == '__main__':
 
     #partition, outputs = create_hammers_partitions()
     # use new MRIs
-    partition, outputs = create_hammers_partitions_new()
-    train_generator = DataGenerator(partition['train'], outputs, batch_size=1, root=MY_ROOT, shuffle=True) # HAMERS_ROOT
-    val_generator = DataGenerator(partition['validation'], outputs, batch_size=1, root=MY_ROOT, shuffle=True) # HAMMERS_ROOT
+    partition, outputs = create_hammers_partitions_new(use_augmentation=True)
+    train_generator = DataGenerator(partition['train'], outputs, batch_size=1, root=MY_ROOT, shuffle=True, histogram_equalization=True) # HAMERS_ROOT
+    val_generator = DataGenerator(partition['validation'], outputs, batch_size=1, root=MY_ROOT, shuffle=True, histogram_equalization=True) # HAMMERS_ROOT
 
     early_stop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                            patience=30,
@@ -33,10 +33,10 @@ if __name__ == '__main__':
                                                            baseline=0.09)
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
-        'weights/unet_3d_inception/20210624/model.epoch={epoch:03d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
+        'weights/unet_3d_inception/20210716/model.epoch={epoch:03d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
         monitor='val_dice_coefficient',
         verbose=1,
-        save_best_only=False,
+        save_best_only=True,
         save_weights_only=False,
         mode='max',
         period=1
@@ -50,13 +50,13 @@ if __name__ == '__main__':
 
     callbacks = [
         model_checkpoint_callback,
-        early_stop_callback,
+        #early_stop_callback,
         tensorboard_callback,
-        learning_rate_callback
+        #learning_rate_callback
     ]
 
     print('start fitting')
-    EPOCHS = 1000
+    EPOCHS = 400
     
     history = model_.fit_generator(generator=train_generator, validation_data=val_generator, epochs=EPOCHS, use_multiprocessing=True,
                          callbacks=callbacks)
