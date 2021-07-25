@@ -6,13 +6,19 @@ import keras
 from utils.preprocess import to_uint8, get_data, histeq
 import math
 
-
+# Cerebellum segmentation
 train_prt = [i for i in range(1, 19)] + [31, 34, 35, 36, 39, 43, 44]
 dev_prt = [i for i in range(19, 25)] + [32, 37, 40]
 test_prt = [i for i in range(25, 31)] + [33, 38, 41, 42]
-
 train_prt_augm = [i for i in range(1, 250)]
 dev_prt_augm = [i for i in range(250, 331)]
+
+# Cerebellum parcellation
+cersegsys_train_prt = [31, 32, 33, 36, 37, 38, 42]
+cersegsys_dev_prt = [34, 39, 41]
+cersegsys_test_prt = [35, 40, 43, 44]
+cersegsys_train_prt_augm = [i for i in range(1, 71)]
+cersegsys_dev_prt_augm = [i for i in range(71, 101)]
 
 
 def visualize(PATH, View="Axial_View", cmap=None):
@@ -236,19 +242,37 @@ def _hammers_output_generator(rng, rnga=None, label='cerebellum'):
       })
     return ret
 
+
 def create_hammers_partitions_new(label='cerebellum', use_augmentation=False):
     if use_augmentation is False:
-      partition = {
+        partition = {
           'train': hammers_partition_generator(train_prt, None),
           'validation': hammers_partition_generator(dev_prt, None)
-      }
-      outputs = _hammers_output_generator(train_prt + dev_prt, None, label)
+        }
+        outputs = _hammers_output_generator(train_prt + dev_prt, None, label)
     else:
-      partition = {
+        partition = {
           'train': hammers_partition_generator(train_prt, train_prt_augm),
           'validation': hammers_partition_generator(dev_prt, dev_prt_augm)
-      }
-      outputs = _hammers_output_generator(train_prt + dev_prt, train_prt_augm + dev_prt_augm, label)
+        }
+        outputs = _hammers_output_generator(train_prt + dev_prt, train_prt_augm + dev_prt_augm, label)
+
+    return partition, outputs
+
+
+def create_cersegsys_partitions(label='cerebellum', use_augmentation=False):
+    if use_augmentation is False:
+        partition = {
+          'train': hammers_partition_generator(cersegsys_train_prt, None),
+          'validation': hammers_partition_generator(cersegsys_dev_prt, None)
+        }
+        outputs = _hammers_output_generator(cersegsys_train_prt + cersegsys_dev_prt, None, label)
+    else:
+        partition = {
+          'train': hammers_partition_generator(cersegsys_train_prt, cersegsys_train_prt_augm),
+          'validation': hammers_partition_generator(cersegsys_dev_prt, cersegsys_dev_prt_augm)
+        }
+        outputs = _hammers_output_generator(cersegsys_train_prt + cersegsys_dev_prt, cersegsys_train_prt_augm + cersegsys_dev_prt_augm, label)
 
     return partition, outputs
 
