@@ -3,13 +3,16 @@ import nibabel as nib
 import matplotlib.pyplot as plt
 import SimpleITK as sitk
 import keras
-from utils.preprocess import to_uint8, get_data
+from utils.preprocess import to_uint8, get_data, histeq
 import math
 
 
-train_prt = [i for i in range(1, 19)] + [31, 35, 36, 39] # 34
+train_prt = [i for i in range(1, 19)] + [31, 34, 35, 36, 39, 43, 44]
 dev_prt = [i for i in range(19, 25)] + [32, 37, 40]
 test_prt = [i for i in range(25, 31)] + [33, 38, 41, 42]
+
+train_prt_augm = [i for i in range(1, 250)]
+dev_prt_augm = [i for i in range(250, 331)]
 
 
 def visualize(PATH, View="Axial_View", cmap=None):
@@ -214,21 +217,38 @@ def hammers_outputs_generator(ii, jj, label):
         'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in range(ii, jj)
     }
 
-def hammers_partition_generator(rng):
-    return ['a{:02d}-pre.nii.gz'.format(i) for i in rng]
+def hammers_partition_generator(rng, rnga=None):
+    if rnga is None:
+      return ['a{:02d}-pre.nii.gz'.format(i) for i in rng]
+    return ['a{:02d}-pre.nii.gz'.format(i) for i in rng] + ['a{:03d}-pre.nii.gz'.format(i) for i in rnga]
 
-def _hammers_output_generator(rng, label):
-    return {
-        'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
-    }
+def _hammers_output_generator(rng, rnga=None, label='cerebellum'):
+    if rnga is None:
+      return {
+          'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+      }
+    
+    ret = {
+          'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+      }
+    ret.update({
+          'a{:03d}-pre.nii.gz'.format(i): 'a{:03d}-{}.nii.gz'.format(i, label) for i in rnga
+      })
+    return ret
 
-def create_hammers_partitions_new(label='cerebellum'):
-    partition = {
-        'train': hammers_partition_generator(train_prt),
-        'validation': hammers_partition_generator(dev_prt)
-    }
-
-    outputs = _hammers_output_generator(train_prt + dev_prt, label)
+def create_hammers_partitions_new(label='cerebellum', use_augmentation=False):
+    if use_augmentation is False:
+      partition = {
+          'train': hammers_partition_generator(train_prt, None),
+          'validation': hammers_partition_generator(dev_prt, None)
+      }
+      outputs = _hammers_output_generator(train_prt + dev_prt, None, label)
+    else:
+      partition = {
+          'train': hammers_partition_generator(train_prt, train_prt_augm),
+          'validation': hammers_partition_generator(dev_prt, dev_prt_augm)
+      }
+      outputs = _hammers_output_generator(train_prt + dev_prt, train_prt_augm + dev_prt_augm, label)
 
     return partition, outputs
 
@@ -256,7 +276,8 @@ class DataGenerator(keras.utils.Sequence):
                  rescale=1./255,
                  shear_range=0.2,
                  zoom_range=0.2,
-                 horizontal_flip=True):
+                 horizontal_flip=True,
+                 histogram_equalization=False):
         self.dim = dim
         self.batch_size = batch_size
         self.outputs = outputs
@@ -264,6 +285,7 @@ class DataGenerator(keras.utils.Sequence):
         self.n_channels = n_channels
         self.shuffle = shuffle
         self.root = root
+        self.histogram_equalization = histogram_equalization
         self.on_epoch_end()
 
     def __len__(self):
@@ -290,7 +312,10 @@ class DataGenerator(keras.utils.Sequence):
         y = []
 
         for i, ID in enumerate(list_ids_temp):
-            X.append(to_uint8(get_data(self.root + 'reduced/' + ID))[None, ...])
+            x = to_uint8(get_data(self.root + 'reduced/' + ID))
+            if self.histogram_equalization is True:
+                x = histeq(x)
+            X.append(x[None, ...])
             y.append(to_uint8(get_data(self.root + 'reduced/' + self.outputs[ID]))[None, ...])
 
         X = np.array(X)
