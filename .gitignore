@@ -5,3 +5,12 @@ __pycache__
 weights
 history
 logs
+docker
+jupyter_notebooks
+ready_models
+01.Dockerfile-preprocessing
+02.Dockerfile-cersegsys
+preprocessing_utils/ROBEX
+preprocessing_utils/ants
+preprocessing_utils/mni/template
+preprocessing_utils/fsl

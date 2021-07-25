@@ -164,3 +164,14 @@ def applyTransform(fixed_path, img_path, transform_path):
 
 def conform_image(path, shape, pixel_sp):
     return nibabel.processing.conform(nib.load(path), shape, pixel_sp)
+
+
+def crop3d(image, bbox):
+    roi = np.asarray(image.dataobj[bbox[0], bbox[1], bbox[2]])
+    return roi
+
+
+def uncrop3d(image, source_shape, source_bbox):
+    uncropped = np.zeros(source_shape, dtype=image.dtype)
+    uncropped[tuple(source_bbox)] = image[:,:,:]
+    return uncropped
