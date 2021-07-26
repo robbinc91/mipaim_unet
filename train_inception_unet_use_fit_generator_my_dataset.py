@@ -33,7 +33,7 @@ if __name__ == '__main__':
                                                            baseline=0.09)
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
-        'weights/unet_3d_inception/20210716/model.epoch={epoch:03d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
+        'weights/unet_3d_inception/20210723/model.epoch={epoch:03d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
         monitor='val_dice_coefficient',
         verbose=1,
         save_best_only=True,
