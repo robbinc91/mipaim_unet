@@ -14,3 +14,5 @@ preprocessing_utils/ROBEX
 preprocessing_utils/ants
 preprocessing_utils/mni/template
 preprocessing_utils/fsl
+
+images

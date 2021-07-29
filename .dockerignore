@@ -14,6 +14,7 @@ weights
 preprocessing_utils/ants
 preprocessing_utils/fsl
 preprocessing_utils/ROBEX
+images
 
 2D_mni_space_model_plot.png
 3d_unet_model_plot_t1.png
