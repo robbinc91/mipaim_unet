@@ -1,1 +1,1 @@
-from model.model import unet, model_thresholding, inception_unet
+from model.model import unet, model_thresholding, inception_unet, parcellation_inception_unet

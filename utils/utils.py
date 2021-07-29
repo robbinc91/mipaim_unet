@@ -322,7 +322,9 @@ class DataGenerator(keras.utils.Sequence):
                  zoom_range=0.2,
                  horizontal_flip=True,
                  histogram_equalization=False,
-                 in_folder='preprocessed-full'):
+                 in_folder='preprocessed-full',
+                 binary=True,
+                 labels=None):
         self.dim = dim
         self.batch_size = batch_size
         self.outputs = outputs
@@ -332,6 +334,8 @@ class DataGenerator(keras.utils.Sequence):
         self.root = root
         self.histogram_equalization = histogram_equalization
         self.in_folder = in_folder
+        self.binary = binary
+        self.labels = labels
         self.on_epoch_end()
 
     def __len__(self):
@@ -362,7 +366,16 @@ class DataGenerator(keras.utils.Sequence):
             if self.histogram_equalization is True:
                 x = histeq(x)
             X.append(x[None, ...])
-            y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)[None, ...])
+
+            if (self.labels is not None) and (self.binary == True):
+                yLabels = list()
+                _data = get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)
+                for label_num in self.labels:
+                    yLabels.append(np.array(_data == label_num).astype(np.uint8)[None, ...])
+                y.append(yLabels)
+
+            else:
+                y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)[None, ...])
 
         X = np.array(X)
         y = np.array(y)
