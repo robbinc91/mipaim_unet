@@ -358,11 +358,11 @@ class DataGenerator(keras.utils.Sequence):
         y = []
 
         for i, ID in enumerate(list_ids_temp):
-            x = to_uint8(get_data(self.root + self.in_folder + '/' + ID))
+            x = get_data(self.root + self.in_folder + '/' + ID).round().astype(np.uint8)
             if self.histogram_equalization is True:
                 x = histeq(x)
             X.append(x[None, ...])
-            y.append(to_uint8(get_data(self.root + self.in_folder + '/' + self.outputs[ID]))[None, ...])
+            y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)[None, ...])
 
         X = np.array(X)
         y = np.array(y)
