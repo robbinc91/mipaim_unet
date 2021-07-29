@@ -12,7 +12,7 @@ import os
 if __name__ == '__main__':
     tf.compat.v1.enable_eager_execution()
     LABELS = json.load(open('labels.json'))['labels']
-    output_folder = 'weights/unet_3d_inception/20210725/'
+    output_folder = 'weights/unet_3d_inception/20210726/'
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
 
@@ -44,10 +44,10 @@ if __name__ == '__main__':
             model_.summary()
 
             partition, outputs = create_cersegsys_partitions(label='label-{0}'.format(label_num), use_augmentation=True)
-            train_generator = DataGenerator(partition['train'], outputs, batch_size=1, root=CERSEGSYS_ROOT,
-                                            shuffle=True, histogram_equalization=False)
-            val_generator = DataGenerator(partition['validation'], outputs, batch_size=1, root=CERSEGSYS_ROOT,
-                                          shuffle=True, histogram_equalization=False)
+            train_generator = DataGenerator(partition['train'], outputs, batch_size=8, root=CERSEGSYS_2_ROOT,
+                                            shuffle=True, histogram_equalization=True, in_folder='preprocessed_parcellation_final')
+            val_generator = DataGenerator(partition['validation'], outputs, batch_size=8, root=CERSEGSYS_2_ROOT,
+                                          shuffle=True, histogram_equalization=True, in_folder='preprocessed_parcellation_final')
 
             model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
                 __output_folder + 'model.epoch={epoch:03d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
@@ -71,6 +71,7 @@ if __name__ == '__main__':
             history = model_.fit_generator(generator=train_generator, validation_data=val_generator, epochs=EPOCHS,
                                            use_multiprocessing=True,
                                            callbacks=callbacks)
+            model_.save(__output_folder+'model{0}.h5'.format(LBL))
         else:
             # Do nothing for now
             pass

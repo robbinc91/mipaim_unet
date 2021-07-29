@@ -259,20 +259,40 @@ def create_hammers_partitions_new(label='cerebellum', use_augmentation=False):
 
     return partition, outputs
 
+def cersegsys_partition_generator(rng, rnga=None):
+    if rnga is None:
+      return ['a{:02d}.nii.gz'.format(i) for i in rng]
+    return ['a{:02d}.nii.gz'.format(i) for i in rng] + ['a{:03d}.nii.gz'.format(i) for i in rnga]
+
+
+def cersegsys_output_generator(rng, rnga=None, label='cerebellum'):
+    if rnga is None:
+      return {
+          'a{:02d}.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+      }
+    
+    ret = {
+          'a{:02d}.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+      }
+    ret.update({
+          'a{:03d}.nii.gz'.format(i): 'a{:03d}-{}.nii.gz'.format(i, label) for i in rnga
+      })
+    return ret
+
 
 def create_cersegsys_partitions(label='cerebellum', use_augmentation=False):
     if use_augmentation is False:
         partition = {
-          'train': hammers_partition_generator(cersegsys_train_prt, None),
-          'validation': hammers_partition_generator(cersegsys_dev_prt, None)
+          'train': cersegsys_partition_generator(cersegsys_train_prt, None),
+          'validation': cersegsys_partition_generator(cersegsys_dev_prt, None)
         }
-        outputs = _hammers_output_generator(cersegsys_train_prt + cersegsys_dev_prt, None, label)
+        outputs = cersegsys_output_generator(cersegsys_train_prt + cersegsys_dev_prt, None, label)
     else:
         partition = {
-          'train': hammers_partition_generator(cersegsys_train_prt, cersegsys_train_prt_augm),
-          'validation': hammers_partition_generator(cersegsys_dev_prt, cersegsys_dev_prt_augm)
+          'train': cersegsys_partition_generator(cersegsys_train_prt, cersegsys_train_prt_augm),
+          'validation': cersegsys_partition_generator(cersegsys_dev_prt, cersegsys_dev_prt_augm)
         }
-        outputs = _hammers_output_generator(cersegsys_train_prt + cersegsys_dev_prt, cersegsys_train_prt_augm + cersegsys_dev_prt_augm, label)
+        outputs = cersegsys_output_generator(cersegsys_train_prt + cersegsys_dev_prt, cersegsys_train_prt_augm + cersegsys_dev_prt_augm, label)
 
     return partition, outputs
 
@@ -301,7 +321,8 @@ class DataGenerator(keras.utils.Sequence):
                  shear_range=0.2,
                  zoom_range=0.2,
                  horizontal_flip=True,
-                 histogram_equalization=False):
+                 histogram_equalization=False,
+                 in_folder='preprocessed-full'):
         self.dim = dim
         self.batch_size = batch_size
         self.outputs = outputs
@@ -310,6 +331,7 @@ class DataGenerator(keras.utils.Sequence):
         self.shuffle = shuffle
         self.root = root
         self.histogram_equalization = histogram_equalization
+        self.in_folder = in_folder
         self.on_epoch_end()
 
     def __len__(self):
@@ -336,11 +358,11 @@ class DataGenerator(keras.utils.Sequence):
         y = []
 
         for i, ID in enumerate(list_ids_temp):
-            x = to_uint8(get_data(self.root + 'reduced/' + ID))
+            x = get_data(self.root + self.in_folder + '/' + ID).round().astype(np.uint8)
             if self.histogram_equalization is True:
                 x = histeq(x)
             X.append(x[None, ...])
-            y.append(to_uint8(get_data(self.root + 'reduced/' + self.outputs[ID]))[None, ...])
+            y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)[None, ...])
 
         X = np.array(X)
         y = np.array(y)

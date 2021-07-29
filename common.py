@@ -9,6 +9,7 @@ IMG_ROOT = './datasets/'
 
 MY_ROOT = './datasets/mine/'
 CERSEGSYS_ROOT = './datasets/cersegsys/'
+CERSEGSYS_2_ROOT = './datasets/cersegsys_2/'
 
 ONLY_3X3_FILTERS = True
 MNI_SHAPE = (1, 192, 224, 192)
