@@ -373,7 +373,8 @@ class DataGenerator(keras.utils.Sequence):
                 yLabels = list()
                 _data = get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)
                 for label_num in self.labels:
-                    yLabels.append(np.array(_data == label_num).astype(np.uint8)[None, ...])
+                    # yLabels.append(np.array(_data == label_num).astype(np.uint8)[None, ...])
+                    yLabels.append(to_uint8(np.array(_data == label_num))[None, ...])
                 y.append(yLabels)
 
             elif self.filter_label is not None:
