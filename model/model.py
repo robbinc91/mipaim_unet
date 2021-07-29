@@ -42,7 +42,8 @@ def parcellation_inception_unet(shape=(1, 128, 80, 80), IMAGE_ORDERING='channels
         _encoded_layers.append(encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filter))
         _outputs.append(decode_inception(_encoded_layers[i], False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filter, dropout=dropout))
 
-    return Model(_input, _outputs)
+    _output = Concatenate(axis=1)(_outputs)
+    return Model(_input, _output)
 
 
 def parcellation_inception_unet_reduced(shape=(1, 128, 80, 80),
