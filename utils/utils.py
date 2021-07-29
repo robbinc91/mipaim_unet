@@ -367,7 +367,7 @@ class DataGenerator(keras.utils.Sequence):
                 x = histeq(x)
             X.append(x[None, ...])
 
-            if (self.labels is not None) and (self.binary == True):
+            if (self.labels is not None) and (self.binary is True):
                 yLabels = list()
                 _data = get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)
                 for label_num in self.labels:
