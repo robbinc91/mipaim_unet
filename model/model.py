@@ -1,5 +1,5 @@
 from keras.models import Model
-from keras.layers import Input
+from keras.layers import Input, Dropout
 from keras.layers import Conv3D, MaxPool3D
 from keras.layers import Conv3D, Conv3DTranspose, Concatenate
 
@@ -33,6 +33,7 @@ def inception_unet(shape=(1, 240, 240, 48), IMAGE_ORDERING='channels_first', onl
 
     return Model(input, output)
 
+
 def parcellation_inception_unet(shape=(1, 128, 80, 80), IMAGE_ORDERING='channels_first', only_3x3_filter=False, dropout=None, labels=28):
     _input = Input(shape=shape)
     _encoded_layers = []
@@ -43,6 +44,31 @@ def parcellation_inception_unet(shape=(1, 128, 80, 80), IMAGE_ORDERING='channels
 
     return Model(_input, _outputs)
 
+
+def parcellation_inception_unet_reduced(shape=(1, 128, 80, 80),
+                                        IMAGE_ORDERING='channels_first',
+                                        only_3x3_filters=False,
+                                        dropout=None,
+                                        labels=28,
+                                        activation='relu',
+                                        final_droput=None):
+    _input = Input(shape=shape)
+
+    encoded_layers = encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+    general_output = decode_inception(encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters,
+                              dropout=dropout)
+
+    _outputs = []
+    for i in range(labels):
+        _outputs.append(Conv3D(filters=1,
+                               kernel_size=1,
+                               activation=activation, strides=1, padding='same', data_format=IMAGE_ORDERING)(general_output))
+
+        if final_droput is not None:
+            _outputs[i] = Dropout(final_droput)(_outputs[i])
+
+    _output = Concatenate(axis=1)(_outputs)
+    return Model(_input, _output)
 
 
 def model_thresholding():
@@ -68,6 +94,7 @@ def model_thresholding():
     conv_5 = Conv3D(filters=1, kernel_size=(3, 3, 3), padding='same', activation='sigmoid', name="CONV3D_5",
                     data_format=IMAGE_ORDERING)(concat_2)
     return Model(img_input, conv_5)
+
     concat_2 = Concatenate(axis=1)([convt_2, conv_1])
     conv_5 = Conv3D(filters=1, kernel_size=(3, 3, 3), padding='same', activation='sigmoid', name="CONV3D_5",
                     data_format=IMAGE_ORDERING)(concat_2)
