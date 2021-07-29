@@ -178,7 +178,7 @@ if $segmented_image; then
 	seg_prefix=$output_dir/$(basename ${seg_image/.nii*/})
   seg_output=${seg_prefix}_mni.nii.gz
 	command="antsApplyTransforms -d 3 -i $seg_image -r $mni_image -o $seg_output \
-		-n Linear -t ${stage2_prefix}Composite.h5 --float"
+		-n NearestNeighbor -t ${stage2_prefix}Composite.h5 --float"
 	echo $command
 	eval $command
 fi

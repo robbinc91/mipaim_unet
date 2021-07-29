@@ -5,12 +5,15 @@ datasets
 decoder
 encoder
 history
-jupyte_notebooks
+jupyter_notebooks
 logs
 model
 tests
 trained_models
 weights
+preprocessing_utils/ants
+preprocessing_utils/fsl
+preprocessing_utils/ROBEX
 
 2D_mni_space_model_plot.png
 3d_unet_model_plot_t1.png
@@ -29,6 +32,8 @@ run.py
 test.py
 train_inception_unet.py
 train_inception_unet_use_fit_generator.py
+train_inception_unet_use_fit_generator_my_dataset.py
+train_inception_parcellation_unet_use_fit_generator_my_dataset.py
 train_unet.py
 train_unet_use_fit_generator.py
 utils/__init__.py
@@ -43,3 +48,9 @@ train_unet.bat
 train_unet_use_fit_generator.bat
 
 readme.md
+
+01.Dockerfile-preprocessing
+02.Dockerfile-cersegsys
+Dockerfile_final
+
+labels.json

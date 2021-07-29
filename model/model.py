@@ -33,6 +33,18 @@ def inception_unet(shape=(1, 240, 240, 48), IMAGE_ORDERING='channels_first', onl
 
     return Model(input, output)
 
+def parcellation_inception_unet(shape=(1, 128, 80, 80), IMAGE_ORDERING='channels_first', only_3x3_filter=False, dropout=None, labels=28):
+    _input = Input(shape=shape)
+    _encoded_layers = []
+    _outputs = []
+    for i in range(labels):
+        _encoded_layers.append(encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filter))
+        _outputs.append(decode_inception(_encoded_layers[i], False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filter, dropout=dropout))
+
+    return Model(_input, _outputs)
+
+
+
 def model_thresholding():
     IMAGE_ORDERING = "channels_first"
     img_input = Input(shape=(1, 240, 240, 48))
