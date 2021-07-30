@@ -64,6 +64,6 @@ if __name__ == '__main__':
     history = model_.fit_generator(generator=train_generator, validation_data=val_generator, epochs=EPOCHS,
                                    use_multiprocessing=True,
                                    callbacks=callbacks)
-    model_.save(__output_folder + 'model-{0}.h5'.format(_label))
+    model_.save(__output_folder + 'model-{0}.h5'.format('fparc'))
 
 
