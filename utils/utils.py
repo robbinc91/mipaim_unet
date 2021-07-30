@@ -325,7 +325,8 @@ class DataGenerator(keras.utils.Sequence):
                  in_folder='preprocessed-full',
                  binary=True,
                  labels=None,
-                 filter_label=None):
+                 filter_label=None,
+                 is_segmentation=True):
         self.dim = dim
         self.batch_size = batch_size
         self.outputs = outputs
@@ -338,6 +339,14 @@ class DataGenerator(keras.utils.Sequence):
         self.binary = binary
         self.labels = labels
         self.filter_label = filter_label
+        self.is_segmentation = is_segmentation
+        self.classes = {}
+        if not self.is_segmentation:
+            with open('{0}{1}'.format(self.root, 'classes.txt')) as input_file:
+                for line in input_file:
+                    line_ = line.split()
+                    if len(line_) == 2:
+                        self.classes[line_[0]] = int(line_[1])
         self.on_epoch_end()
 
     def __len__(self):
@@ -369,19 +378,29 @@ class DataGenerator(keras.utils.Sequence):
                 x = histeq(x)
             X.append(x[None, ...])
 
-            if (self.labels is not None) and (self.binary is True):
-                yLabels = list()
-                _data = get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)
-                for label_num in self.labels:
-                    # yLabels.append(np.array(_data == label_num).astype(np.uint8)[None, ...])
-                    yLabels.append(to_uint8(np.array(_data == label_num))[None, ...])
-                y.append(yLabels)
+            if self.is_segmentation:
+                # it's a segmentation/parcellation task
 
-            elif self.filter_label is not None:
-                _data = get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)
-                y.append(to_uint8(np.array(_data == self.filter_label))[None, ...])
+                if (self.labels is not None) and (self.binary is True):
+                    # binary parcellation
+                    yLabels = list()
+                    _data = get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)
+                    for label_num in self.labels:
+                        # yLabels.append(np.array(_data == label_num).astype(np.uint8)[None, ...])
+                        yLabels.append(to_uint8(np.array(_data == label_num))[None, ...])
+                    y.append(yLabels)
+
+                elif self.filter_label is not None:
+                    # binary parcellation, filtering by label. too slow
+                    _data = get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)
+                    y.append(to_uint8(np.array(_data == self.filter_label))[None, ...])
+                else:
+                    # segmentation
+                    y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)[None, ...])
             else:
-                y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)[None, ...])
+                # it's a classification task
+                # return the item's classes (no multiclass items)
+                y.append(self.classes[ID])
 
         X = np.array(X)
         y = np.array(y)

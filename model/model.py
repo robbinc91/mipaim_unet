@@ -4,7 +4,7 @@ from keras.layers import Conv3D, MaxPool3D
 from keras.layers import Conv3D, Conv3DTranspose, Concatenate
 
 from encoder import encode, encode_inception
-from decoder import decode, decode_inception
+from decoder import decode, decode_inception, decode_classification
 
 
 def unet(t1, FLAIR=None, IR=None, IMAGE_ORDERING='channels_first', shape=(1, 240, 240, 48)):
@@ -70,6 +70,18 @@ def parcellation_inception_unet_reduced(shape=(1, 128, 80, 80),
 
     _output = Concatenate(axis=1)(_outputs)
     return Model(_input, _output)
+
+
+def classification_model(shape=(1, 128, 80, 80),
+                         IMAGE_ORDERING='channels_first',
+                         only_3x3_filters=False,
+                         dropout=None):
+    _input = Input(shape=shape)
+
+    encoded_layers = encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+    _decoded = decode_classification(encoded_layers[-1], dropout=dropout)
+
+    return Model(_input, _decoded)
 
 
 def model_thresholding():
