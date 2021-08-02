@@ -73,12 +73,12 @@ def decode_inception(layers,
 
 def decode_classification(_layers, dropout=None, n_classes=3):
     _output = Flatten()(_layers)
-    _output = Dense(128)(_output)
+    _output = Dense(256)(_output)
     _output = Activation('relu')(_output)
     if dropout is not None:
         _output = Dropout(dropout)(_output)
 
-    _output = Dense(64, activation='relu')(_output)
+    _output = Dense(256, activation='relu')(_output)
     _output = Dense(n_classes, activation='softmax')(_output)
 
     return _output

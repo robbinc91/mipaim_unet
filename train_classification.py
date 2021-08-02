@@ -40,8 +40,8 @@ if __name__ == '__main__':
                                   is_segmentation=False)
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
-        __output_folder + 'model.epoch={epoch:03d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
-        monitor='val_dice_coefficient',
+        __output_folder + 'model.epoch={epoch:03d}.val_accuracy={val_accuracy:.5f}.h5',
+        monitor='val_accuracy',
         verbose=1,
         save_best_only=True,
         save_weights_only=False,

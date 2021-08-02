@@ -5,6 +5,8 @@ import SimpleITK as sitk
 import keras
 from utils.preprocess import to_uint8, get_data, histeq
 import math
+from keras.utils import to_categorical
+
 
 # Cerebellum segmentation
 train_prt = [i for i in range(1, 19)] + [31, 34, 35, 36, 39, 43, 44]
@@ -346,7 +348,7 @@ class DataGenerator(keras.utils.Sequence):
                 for line in input_file:
                     line_ = line.split()
                     if len(line_) == 2:
-                        self.classes[line_[0]] = int(line_[1])
+                        self.classes[line_[0]] = int(line_[1]) - 1
         self.on_epoch_end()
 
     def __len__(self):
@@ -403,7 +405,13 @@ class DataGenerator(keras.utils.Sequence):
                 y.append(self.classes[ID])
 
         X = np.array(X)
-        y = np.array(y)
+
+        if not self.is_segmentation:
+            y = to_categorical(y, num_classes=3)
+            #y = np.array(y)
+            #pass
+        else:
+            y = np.array(y)
 
         return X, y
 
