@@ -10,15 +10,20 @@ import os
 
 
 def main(label_nmr, _labels):
-    output_folder = 'weights/unet_3d_inception/20210729-parcellation-no-binary/'
+    output_folder = 'weights/unet_3d_inception/20210801-parcellation-no-binary/'
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
 
-    # 400 epochs per label
-    EPOCHS = 400
+    # 200 epochs per label
+    EPOCHS = 200
 
     _label = 'parcellation'
     __output_folder = '{0}{1}/'.format(output_folder, label_nmr)
+
+    if os.path.exists(__output_folder + 'model-{0}.h5'.format(_label)):
+        # if we reached the total number of iterations, then
+        return
+
     if not os.path.exists(__output_folder):
         os.mkdir(__output_folder)
 
