@@ -10,7 +10,7 @@ import os
 
 
 def main(label_nmr, _labels):
-    filters_dim = [8, 26, 32, 64, 128]
+    filters_dim = [4, 8, 16, 32, 32]
     output_folder = 'weights/unet_3d_inception/20210801-parcellation-no-binary/'
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
@@ -21,7 +21,7 @@ def main(label_nmr, _labels):
     _label = 'parcellation'
     __output_folder = '{0}{1}/'.format(output_folder, label_nmr)
 
-    if os.path.exists(__output_folder + 'model-{0}.h5'.format(label_nmr)):
+    if os.path.exists(__output_folder + 'model-sm-{0}.h5'.format(label_nmr)):
         # if we reached the total number of iterations, then
         return
 
@@ -69,7 +69,7 @@ def main(label_nmr, _labels):
     history = model_.fit_generator(generator=train_generator, validation_data=val_generator, epochs=EPOCHS,
                                    use_multiprocessing=True,
                                    callbacks=callbacks)
-    model_.save(__output_folder + 'model-{0}.h5'.format(label_nmr))
+    model_.save(__output_folder + 'model-sm-{0}.h5'.format(label_nmr))
 
 if __name__ == '__main__':
     tf.compat.v1.enable_eager_execution()

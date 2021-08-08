@@ -12,7 +12,7 @@ if __name__ == '__main__':
     LABELS = json.load(open('labels.json'))['labels']
     _labels = list(LABELS.values())[1:]
 
-    output_folder = 'weights/unet_3d_inception/20210729-parcellation-binary/'
+    output_folder = 'weights/unet_3d_inception/20210804-parcellation-binary-full/'
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
 
@@ -24,10 +24,10 @@ if __name__ == '__main__':
     if not os.path.exists(__output_folder):
         os.mkdir(__output_folder)
 
-    model_ = parcellation_inception_unet(labels=len(_labels), dropout=0.2, only_3x3_filter=True)
+    model_ = parcellation_inception_unet(labels=len(_labels), dropout=0.2, only_3x3_filter=True, filters_dim=[2, 4, 8, 16, 32])
     model_.compile(optimizer='adam',
-                   loss=dice_loss,
-                   metrics=[dice_coefficient])
+                   loss=dice_loss_multilabel,
+                   metrics=[dice_coefficient_multilabel])
     model_.summary()
 
     partition, outputs = create_cersegsys_partitions(label=_label, use_augmentation=True)
@@ -46,10 +46,10 @@ if __name__ == '__main__':
         __output_folder + 'model.epoch={epoch:03d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
         monitor='val_dice_coefficient',
         verbose=1,
-        save_best_only=True,
+        save_best_only=False,
         save_weights_only=False,
         mode='max',
-        period=1
+        period=2
     )
 
     callbacks = [

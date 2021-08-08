@@ -10,7 +10,7 @@ def decode_inception(layers,
                      filters_dim=None):
 
     if filters_dim is None:
-        filters_dim = [8, 26, 32, 64, 128]
+        filters_dim = [8, 16, 32, 64, 128]
 
     fn = basic_naive_inception if naive else basic_rdim_inception
     Conv = Conv3D if len(layers[0].shape) == 5 else Conv2D
@@ -65,7 +65,7 @@ def decode_inception(layers,
                   padding='same',
                   data_format=IMAGE_ORDERING)(layer_10)
 
-    if _output is not None:
+    if dropout is not None:
         _output = Dropout(dropout)(_output)
 
     return _output

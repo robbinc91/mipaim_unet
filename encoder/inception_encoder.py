@@ -67,7 +67,7 @@ def encode_inception(img_input,
     MaxPool = MaxPool3D if len(img_input.shape) == 5 else MaxPool2D
 
     if filters_dim is None:
-        filters_dim = [8, 26, 32, 64, 128]
+        filters_dim = [8, 16, 32, 64, 128]
 
     layer_1 = fn(img_input, filters_dim[0], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
 

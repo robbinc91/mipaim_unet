@@ -27,6 +27,23 @@ def categorical_crossentropy_3d(y_true, y_pred):
     mean_cross_entropy = cross_entropy / (num_total_elements + K.epsilon())
     return mean_cross_entropy
 
+
+def dice_loss_multilabel(y_true, y_pred):
+    return 1-dice_coefficient_multilabel(y_true, y_pred)
+
+
+def dice_coefficient_multilabel(y_true, y_pred, smooth=.1):
+    dice = 0.
+    
+    for i in range(y_pred.shape[1]):
+        dice += dice_coefficient(y_true[:,i,:,:,:], y_pred[:,i,:,:,:])
+    
+    dice /= y_pred.shape[1]
+
+    return dice
+
+
+
 def dice_coefficient(y_true, y_pred, smooth=.1):
     """
     Dice = (2*|X & Y|)/ (|X|+ |Y|)
