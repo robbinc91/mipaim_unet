@@ -1,6 +1,153 @@
 from keras.layers import Conv3D, Conv3DTranspose, Concatenate, \
-    UpSampling3D, Dropout, Conv2D, Conv2DTranspose, Flatten, Dense, Activation
+    UpSampling3D, Dropout, Conv2D, Conv2DTranspose, Flatten, Dense, Activation, Add
 from encoder import basic_rdim_inception, basic_naive_inception
+
+
+def decode_parcellation(layers,
+                         naive=False,
+                         IMAGE_ORDERING='channels_first',
+                         dropout=None,
+                         only_3x3_filters=False,
+                         filters_dim=None,num_labels=28):
+
+    if filters_dim is None:
+        filters_dim = [8, 16, 32, 64, 128]
+
+    fn = basic_naive_inception if naive else basic_rdim_inception
+    Conv = Conv3D if len(layers[0].shape) == 5 else Conv2D
+    ConvTranspose = Conv3DTranspose if len(layers[0].shape) == 5 else Conv2DTranspose
+
+    layer_51 = Conv(filters=num_labels,
+                    kernel_size=1,
+                    activation='relu',
+                    strides=1,
+                    padding='same',
+                    data_format=IMAGE_ORDERING)(layers[4])
+    layer_51 = ConvTranspose(filters=num_labels,
+                             kernel_size=3,
+                             activation='relu',
+                             strides=2,
+                             padding='same',
+                             data_format=IMAGE_ORDERING)(layer_51)
+
+    layer_6 = fn(layers[4], filters_dim[4], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+    # layer_6 =UpSampling3D(size=(3, 3, 3))(layer_6)
+    layer_6 = ConvTranspose(filters=filters_dim[4],
+                            kernel_size=3,
+                            activation='relu',
+                            strides=2,
+                            padding='same',
+                            data_format=IMAGE_ORDERING)(layer_6)
+
+    layer_61 = Conv(filters=num_labels,
+                   kernel_size=1,
+                   activation='relu',
+                   strides=1,
+                   padding='same',
+                   data_format=IMAGE_ORDERING)(layer_6)
+    layer_61 = Add()([layer_51, layer_61])
+    layer_61 = ConvTranspose(filters=num_labels,
+                            kernel_size=3,
+                            activation='relu',
+                            strides=2,
+                            padding='same',
+                            data_format=IMAGE_ORDERING)(layer_61)
+
+
+    layer_7 = Concatenate(axis=1)([layers[3], layer_6])
+    layer_7 = fn(layer_7, filters_dim[3], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+    # layer_7 = UpSampling3D(size=(3, 3, 3))(layer_7)
+    layer_7 = ConvTranspose(filters=filters_dim[3],
+                            kernel_size=3,
+                            activation='relu',
+                            strides=2,
+                            padding='same',
+                            data_format=IMAGE_ORDERING)(layer_7)
+
+    layer_71 = Conv(filters=num_labels,
+                    kernel_size=1,
+                    activation='relu',
+                    strides=1,
+                    padding='same',
+                    data_format=IMAGE_ORDERING)(layer_7)
+    layer_71 = Add()([layer_61, layer_71])
+    layer_71 = ConvTranspose(filters=num_labels,
+                             kernel_size=3,
+                             activation='relu',
+                             strides=2,
+                             padding='same',
+                             data_format=IMAGE_ORDERING)(layer_71)
+
+
+    layer_8 = Concatenate(axis=1)([layers[2], layer_7])
+    layer_8 = fn(layer_8, filters_dim[2], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+    # layer_8 = UpSampling3D(size=(3, 3, 3))(layer_8)
+    layer_8 = ConvTranspose(filters=filters_dim[2],
+                            kernel_size=3,
+                            activation='relu',
+                            strides=2,
+                            padding='same',
+                            data_format=IMAGE_ORDERING)(layer_8)
+
+    layer_81 = Conv(filters=num_labels,
+                    kernel_size=1,
+                    activation='relu',
+                    strides=1,
+                    padding='same',
+                    data_format=IMAGE_ORDERING)(layer_8)
+    layer_81 = Add()([layer_71, layer_81])
+    layer_81 = ConvTranspose(filters=num_labels,
+                             kernel_size=3,
+                             activation='relu',
+                             strides=2,
+                             padding='same',
+                             data_format=IMAGE_ORDERING)(layer_81)
+
+    layer_9 = Concatenate(axis=1)([layers[1], layer_8])
+    layer_9 = fn(layer_9, filters_dim[1], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+    # layer_9 = UpSampling3D(size=(3, 3, 3))(layer_9)
+    layer_9 = ConvTranspose(filters=filters_dim[1],
+                            kernel_size=3,
+                            activation='relu',
+                            strides=2,
+                            padding='same',
+                            data_format=IMAGE_ORDERING)(layer_9)
+
+    layer_91 = Conv(filters=num_labels,
+                    kernel_size=1,
+                    activation='relu',
+                    strides=1,
+                    padding='same',
+                    data_format=IMAGE_ORDERING)(layer_9)
+    layer_91 = Add()([layer_81, layer_91])
+    #layer_91 = ConvTranspose(filters=filters_dim[0],
+    #                         kernel_size=3,
+    #                         activation='relu',
+    #                         strides=2,
+    #                         padding='same',
+    #                         data_format=IMAGE_ORDERING)(layer_91)
+
+    layer_10 = Concatenate(axis=1)([layers[0], layer_9])
+    layer_10 = fn(layer_10, filters_dim[0], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+
+    _output = Conv(filters=num_labels,
+                   kernel_size=1,
+                   activation='relu',
+                   strides=1,
+                   padding='same',
+                   data_format=IMAGE_ORDERING)(layer_10)
+
+    # print(layer_91.shape)
+    # print(_output.shape)
+    _output = Add()([layer_91, _output])
+
+    if dropout is not None:
+        _output = Dropout(dropout)(_output)
+
+    _output = Activation(activation='softmax')(_output)
+
+    return _output
+
 
 def decode_inception(layers,
                      naive=False,
