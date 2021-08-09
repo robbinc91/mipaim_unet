@@ -1,5 +1,5 @@
 import tensorflow as tf
-from model import parcellation_inception_unet
+from model import parcellation_inception_unet_2
 from utils import *
 import pickle
 import keras
@@ -12,7 +12,7 @@ if __name__ == '__main__':
     LABELS = json.load(open('labels.json'))['labels']
     _labels = list(LABELS.values())[1:]
 
-    output_folder = 'weights/unet_3d_inception/20210804-parcellation-binary-full/'
+    output_folder = 'weights/unet_3d_inception/20210808-parcellation-binary-full/'
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
 
@@ -24,10 +24,10 @@ if __name__ == '__main__':
     if not os.path.exists(__output_folder):
         os.mkdir(__output_folder)
 
-    model_ = parcellation_inception_unet(labels=len(_labels), dropout=0.2, only_3x3_filter=True, filters_dim=[2, 4, 8, 16, 32])
+    model_ = parcellation_inception_unet_2(labels=len(_labels), dropout=0.2, only_3x3_filter=True, filters_dim=[2, 4, 4, 8, 16])
     model_.compile(optimizer='adam',
-                   loss=dice_loss_multilabel,
-                   metrics=[dice_coefficient_multilabel])
+                   loss=soft_dice_loss,
+                   metrics=[soft_dice_score])
     model_.summary()
 
     partition, outputs = create_cersegsys_partitions(label=_label, use_augmentation=True)
@@ -43,8 +43,8 @@ if __name__ == '__main__':
                                   labels=_labels)
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
-        __output_folder + 'model.epoch={epoch:03d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
-        monitor='val_dice_coefficient',
+        __output_folder + 'model.epoch={epoch:03d}.val_soft_dice_score={val_soft_dice_score:.5f}.h5',
+        monitor='val_soft_dice_score',
         verbose=1,
         save_best_only=False,
         save_weights_only=False,

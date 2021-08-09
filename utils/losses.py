@@ -1,6 +1,7 @@
 import tensorflow as tf
 import keras.backend as K
 import numpy as np
+from functools import partial
 
 def categorical_crossentropy_3d(y_true, y_pred):
     """
@@ -58,7 +59,31 @@ def dice_coefficient(y_true, y_pred, smooth=.1):
 def dice_loss(y_true, y_pred):
     return 1-dice_coefficient(y_true, y_pred)
 
-def jaccard_distance(y_true, y_pred, smooth=100):
+def soft_dice_score(image1, image2, axis=(-3, -2, -1), eps=0.001):
+    """Calculate average Dice across channels
+    
+    Args:
+        image1, image2 (Tensor): The images to calculate Dice
+        axis (tuple of int or int): The axes that the function sums across
+        eps (float): Small number to prevent division by zero
+
+    Returns:
+        dice (float): The average Dice
+
+    """
+    intersection = K.sum(image1 * image2, axis=axis)
+    sum1 = K.sum(image1, axis=axis)
+    sum2 = K.sum(image2, axis=axis)
+    dices = 2 * (intersection + eps) / (sum1 + sum2 + eps)
+    dice = K.mean(dices)
+    return dice
+
+
+def soft_dice_loss(y_true, y_pred):
+    return 1-soft_dice_score(y_true, y_pred)
+
+
+def jaccard_score(y_true, y_pred, smooth=100):
     """Jaccard distance for semantic segmentation.
     Also known as the intersection-over-union loss.
     This loss is useful when you have unbalanced numbers of pixels within an image
@@ -90,4 +115,7 @@ def jaccard_distance(y_true, y_pred, smooth=100):
     intersection = K.sum(K.abs(y_true * y_pred))
     sum_ = K.sum(K.abs(y_true) + K.abs(y_pred))
     jac = (intersection + smooth) / (sum_ - intersection + smooth)
-    return (1 - jac) * smooth
+    return jac
+
+def jaccard_distance(y_true, y_pred):
+    return 1 - jaccard_score(y_true, y_pred)

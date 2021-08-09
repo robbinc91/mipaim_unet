@@ -1,5 +1,5 @@
 from keras.models import Model
-from keras.layers import Input, Dropout
+from keras.layers import Input, Dropout, Add, Activation
 from keras.layers import Conv3D, MaxPool3D
 from keras.layers import Conv3D, Conv3DTranspose, Concatenate
 
@@ -25,13 +25,12 @@ def unet(t1, FLAIR=None, IR=None, IMAGE_ORDERING='channels_first', shape=(1, 240
     return Model(inputs[0], output)
 
 
-def inception_unet(shape=(1, 240, 240, 48), IMAGE_ORDERING='channels_first', only_3x3_filters=False, dropout=None, filters_dim=None):
-    input = Input(shape=shape)
-    encoded_layers = encode_inception(input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, filters_dim=filters_dim)
-    output = decode_inception(encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, dropout=dropout, filters_dim=filters_dim)
+def inception_unet(shape=(1, 240, 240, 48), IMAGE_ORDERING='channels_first', only_3x3_filters=False, dropout=None, filters_dim=None, multilabel=False):
+    _input = Input(shape=shape)
+    encoded_layers = encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, filters_dim=filters_dim)
+    _output = decode_inception(encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, dropout=dropout, filters_dim=filters_dim, multilabel=multilabel)
 
-
-    return Model(input, output)
+    return Model(_input, _output)
 
 
 def parcellation_inception_unet(shape=(1, 128, 80, 80), IMAGE_ORDERING='channels_first', only_3x3_filter=False, dropout=None, labels=28,  filters_dim=None):
@@ -43,6 +42,19 @@ def parcellation_inception_unet(shape=(1, 128, 80, 80), IMAGE_ORDERING='channels
         _outputs.append(decode_inception(_encoded_layers[i], False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filter, dropout=dropout, filters_dim=filters_dim))
 
     _output = Concatenate(axis=1)(_outputs)
+    _output = Activation('softmax')(_output)
+    return Model(_input, _output)
+
+
+def parcellation_inception_unet_2(shape=(1, 128, 80, 80), IMAGE_ORDERING='channels_first', only_3x3_filter=False, dropout=None, labels=28,  filters_dim=None):
+    _input = Input(shape=shape)
+    _encoded_layers = encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filter, filters_dim=filters_dim)
+    _outputs = []
+    for i in range(labels):
+        _outputs.append(decode_inception(_encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filter, dropout=dropout, filters_dim=filters_dim))
+
+    _output = Concatenate(axis=1)(_outputs)
+    _output = Activation('softmax')(_output)
     return Model(_input, _output)
 
 
@@ -68,7 +80,8 @@ def parcellation_inception_unet_reduced(shape=(1, 128, 80, 80),
         if final_droput is not None:
             _outputs[i] = Dropout(final_droput)(_outputs[i])
 
-    _output = Concatenate(axis=1)(_outputs)
+    _output = Add()(_outputs)
+    _output = Conv3D()
     return Model(_input, _output)
 
 
