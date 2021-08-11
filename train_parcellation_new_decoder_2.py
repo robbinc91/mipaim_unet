@@ -36,7 +36,7 @@ if __name__ == '__main__':
     if not os.path.exists(__output_folder):
         os.mkdir(__output_folder)
     model_ = inception_unet_semantic_segmentation(shape=REDUCED_MNI_SHAPE_CERSEGSYS_PARCELLATION, only_3x3_filters=ONLY_3X3_FILTERS,
-                            dropout=0.3, filters_dim=[32, 32, 32, 32, 32], num_labels=28)
+                            dropout=0.3, filters_dim=[32, 32, 32, 64, 64], num_labels=28)
     model_.compile(optimizer='adam',
                     loss=dice_loss,
                     metrics=[dice_coefficient])
@@ -50,13 +50,13 @@ if __name__ == '__main__':
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
         # Use Dice and jaccard Scores
-        __output_folder + 'model.epoch={epoch:03d}.val_dice={val_dice_coefficient:.5f}.h5',
+        __output_folder + 'modelbin.epoch={epoch:03d}.val_dice={val_dice_coefficient:.5f}.h5',
         monitor='val_dice_coefficient',
         verbose=1,
         save_best_only=False,
         save_weights_only=False,
         mode='max',
-        period=20
+        period=2
     )
 
     callbacks = [
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     print('start fitting on {0}'.format('full cerebellum parcellation'))
 
     history = model_.fit_generator(generator=train_generator, validation_data=val_generator, epochs=EPOCHS,
-                                    use_multiprocessing=True,
+                                    use_multiprocessing=False,
                                     callbacks=callbacks)
     model_.save(__output_folder+'model-{0}.h5'.format(_label))
 

@@ -1,5 +1,7 @@
 from keras.layers import Conv3D, Conv3DTranspose, Concatenate, \
     UpSampling3D, Dropout, Conv2D, Conv2DTranspose, Flatten, Dense, Activation, Add
+  
+from keras.layers.normalization import BatchNormalization
 from encoder import basic_rdim_inception, basic_naive_inception
 
 
@@ -131,7 +133,7 @@ def decode_parcellation(layers,
     layer_10 = fn(layer_10, filters_dim[0], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
 
     _output = Conv(filters=num_labels,
-                   kernel_size=1,
+                   kernel_size=3,
                    activation='relu',
                    strides=1,
                    padding='same',
@@ -144,7 +146,9 @@ def decode_parcellation(layers,
     if dropout is not None:
         _output = Dropout(dropout)(_output)
 
-    _output = Activation(activation='softmax')(_output)
+    _output = BatchNormalization()(_output)
+    _output = Conv(filters=num_labels, activation='relu', kernel_size=1, padding='valid', data_format=IMAGE_ORDERING)(_output)
+    #_output = Activation('softmax')(_output)
 
     return _output
 
