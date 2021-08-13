@@ -1,16 +1,17 @@
 from keras.layers import Conv3D, Conv3DTranspose, Concatenate, \
-    UpSampling3D, Dropout, Conv2D, Conv2DTranspose, Flatten, Dense, Activation, Add
+    UpSampling3D, Dropout, Conv2D, Conv2DTranspose, Flatten, Dense, Activation, Add, Softmax
   
 from keras.layers.normalization import BatchNormalization
 from encoder import basic_rdim_inception, basic_naive_inception
 
 
 def decode_parcellation(layers,
-                         naive=False,
-                         IMAGE_ORDERING='channels_first',
-                         dropout=None,
-                         only_3x3_filters=False,
-                         filters_dim=None,num_labels=28):
+                        naive=False,
+                        IMAGE_ORDERING='channels_first',
+                        dropout=None,
+                        only_3x3_filters=False,
+                        filters_dim=None,
+                        num_labels=28):
 
     if filters_dim is None:
         filters_dim = [8, 16, 32, 64, 128]
@@ -147,8 +148,11 @@ def decode_parcellation(layers,
         _output = Dropout(dropout)(_output)
 
     _output = BatchNormalization()(_output)
-    _output = Conv(filters=num_labels, activation='relu', kernel_size=1, padding='valid', data_format=IMAGE_ORDERING)(_output)
-    #_output = Activation('softmax')(_output)
+    _output = Conv(filters=num_labels,
+                   kernel_size=1,
+                   padding='valid',
+                   data_format=IMAGE_ORDERING)(_output)
+    _output = Activation('softmax')(_output)
 
     return _output
 

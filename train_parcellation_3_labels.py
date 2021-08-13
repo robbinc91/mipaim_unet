@@ -12,7 +12,7 @@ import os
 if __name__ == '__main__':
     tf.compat.v1.enable_eager_execution()
     LABELS = json.load(open('labels.json'))['labels']
-    output_folder = 'weights/unet_3d_inception/20210809/'
+    output_folder = 'weights/unet_3d_inception/20210813/'
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
 
@@ -28,9 +28,9 @@ if __name__ == '__main__':
     )
 
     learning_rate_callback = keras.callbacks.LearningRateScheduler(step_decay)
-    _label = 'parcellationx'
+    _label = 'parcellation_3lb'
 
-    __labels = [i for i in range(1,29)]
+    __labels = [i for i in range(1, 4)]
 
     __output_folder = '{0}{1}/'.format(output_folder, _label)
     if not os.path.exists(__output_folder):
@@ -39,7 +39,7 @@ if __name__ == '__main__':
                                                   only_3x3_filters=ONLY_3X3_FILTERS,
                                                   dropout=0.3,
                                                   filters_dim=[32, 32, 32, 64, 64],
-                                                  num_labels=28)
+                                                  num_labels=len(__labels))
     model_.compile(optimizer='adam',
                    loss=dice_loss,
                    metrics=[dice_coefficient])

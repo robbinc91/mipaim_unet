@@ -1,15 +1,21 @@
 from model import parcellation_inception_unet, \
     parcellation_inception_unet_reduced, \
     classification_model, \
-    inception_unet_semantic_segmentation
+    inception_unet_semantic_segmentation,\
+    unet, \
+    inception_unet
 
+from keras.models import load_model
 from common import *
 
 if __name__ == '__main__':
-    _model = inception_unet_semantic_segmentation(shape=(1, 128, 80, 80), only_3x3_filters=True, dropout=0.2)
-    _model.compile(optimizer='adam',
-                   loss=dice_loss,
-                   metrics=[dice_coefficient])
+    model_load = 'E:\\university\\phd\\tests\\niftifiles\\mine\\segmentation\\segm.h5'
+    #_model = inception_unet(shape=REDUCED_MNI_SHAPE_MINE, only_3x3_filters=ONLY_3X3_FILTERS, dropout=0.2,
+    #                        filters_dim=[8, 8, 16, 32, 32])
+    _model = load_model(model_load, custom_objects={'dice_coefficient': dice_coefficient, 'dice_loss': dice_loss})
+    #_model.compile(optimizer='adam',
+    #               loss=dice_loss,
+    #               metrics=[dice_coefficient])
     _model.summary()
-    from keras.utils.vis_utils import plot_model
-    plot_model(_model, to_file='parcellating_network_model.png', show_shapes=True)
+    #from keras.utils.vis_utils import plot_model
+    #plot_model(_model, to_file='parcellating_network_model.png', show_shapes=True)

@@ -45,9 +45,18 @@ def inception_unet_semantic_segmentation(shape=(1, 240, 240, 48),
                                          filters_dim=None,
                                          num_labels=28):
     _input = Input(shape=shape)
-    encoded_layers = encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, filters_dim=filters_dim)
-    _output = decode_parcellation(encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters,
-                               dropout=dropout, filters_dim=filters_dim, num_labels=num_labels)
+    encoded_layers = encode_inception(_input,
+                                      False,
+                                      IMAGE_ORDERING=IMAGE_ORDERING,
+                                      only_3x3_filters=only_3x3_filters,
+                                      filters_dim=filters_dim)
+    _output = decode_parcellation(encoded_layers,
+                                  False,
+                                  IMAGE_ORDERING=IMAGE_ORDERING,
+                                  only_3x3_filters=only_3x3_filters,
+                                  dropout=dropout,
+                                  filters_dim=filters_dim,
+                                  num_labels=num_labels)
 
     return Model(_input, _output)
 

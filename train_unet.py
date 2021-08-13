@@ -131,7 +131,7 @@ if __name__ == '__main__':
         HAS_FLAIR = True if FLAIRpath is not None else None
         HAS_IR = True if IRpath is not None else None
         print("STARTING TRAINING...")
-        model_ = vnet(t1=True, FLAIR=HAS_FLAIR, IR=HAS_IR)
+        model_ = unet(t1=True, FLAIR=HAS_FLAIR, IR=HAS_IR)
 
         model_.compile('adam', dice_loss, [dice_coefficient])
         model_.summary()
