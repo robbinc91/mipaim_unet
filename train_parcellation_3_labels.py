@@ -41,8 +41,8 @@ if __name__ == '__main__':
                                                   filters_dim=[16, 32, 64, 64, 128],
                                                   num_labels=len(__labels))
     model_.compile(optimizer='adam',
-                   loss=dice_loss,
-                   metrics=[dice_coefficient])
+                   loss=soft_dice_loss,
+                   metrics=[soft_dice_score, categorical_crossentropy_3d])
     model_.summary()
 
     partition, outputs = create_cersegsys_partitions(label=_label, use_augmentation=True)
@@ -67,8 +67,8 @@ if __name__ == '__main__':
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
         # Use Dice and jaccard Scores
-        __output_folder + 'modelbin.epoch={epoch:03d}.val_dice={val_dice_coefficient:.5f}.h5',
-        monitor='val_dice_coefficient',
+        __output_folder + 'modelbin.epoch={epoch:03d}.val_dice={val_soft_dice_score:.5f}.h5',
+        monitor='val_soft_dice_score',
         verbose=1,
         save_best_only=False,
         save_weights_only=False,
