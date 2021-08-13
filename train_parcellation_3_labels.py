@@ -38,7 +38,7 @@ if __name__ == '__main__':
     model_ = inception_unet_semantic_segmentation(shape=REDUCED_MNI_SHAPE_CERSEGSYS_PARCELLATION,
                                                   only_3x3_filters=ONLY_3X3_FILTERS,
                                                   dropout=0.3,
-                                                  filters_dim=[32, 32, 32, 64, 64],
+                                                  filters_dim=[16, 32, 64, 64, 128],
                                                   num_labels=len(__labels))
     model_.compile(optimizer='adam',
                    loss=dice_loss,
