@@ -30,10 +30,12 @@ def inception_unet(shape=(1, 240, 240, 48),
                    only_3x3_filters=False,
                    dropout=None,
                    filters_dim=None,
-                   multilabel=False):
+                   multilabel=False,
+                   skip_connections_treatment_number=0,
+                   instance_normalization=False):
     _input = Input(shape=shape)
-    encoded_layers = encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, filters_dim=filters_dim)
-    _output = decode_inception(encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, dropout=dropout, filters_dim=filters_dim)
+    encoded_layers = encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, filters_dim=filters_dim, skip_connections_treatment_number=skip_connections_treatment_number, instance_normalization=instance_normalization)
+    _output = decode_inception(encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, dropout=dropout, filters_dim=filters_dim, instance_normalization=instance_normalization)
 
     return Model(_input, _output)
 
@@ -43,13 +45,15 @@ def inception_unet_semantic_segmentation(shape=(1, 240, 240, 48),
                                          only_3x3_filters=False,
                                          dropout=None,
                                          filters_dim=None,
-                                         num_labels=28):
+                                         num_labels=28,
+                                         skip_connections_treatment_number=0):
     _input = Input(shape=shape)
     encoded_layers = encode_inception(_input,
                                       False,
                                       IMAGE_ORDERING=IMAGE_ORDERING,
                                       only_3x3_filters=only_3x3_filters,
-                                      filters_dim=filters_dim)
+                                      filters_dim=filters_dim,
+                                      skip_connections_treatment_number=skip_connections_treatment_number)
     _output = decode_parcellation(encoded_layers,
                                   False,
                                   IMAGE_ORDERING=IMAGE_ORDERING,

@@ -19,8 +19,13 @@ dev_prt_augm = [i for i in range(250, 331)]
 cersegsys_train_prt = [31, 32, 33, 36, 37, 38, 42]
 cersegsys_dev_prt = [34, 39, 41]
 cersegsys_test_prt = [35, 40, 43, 44]
+
 cersegsys_train_prt_augm = [i for i in range(1, 71)]
 cersegsys_dev_prt_augm = [i for i in range(71, 101)]
+
+
+cersegsys3_train_prt_augm = [i for i in range(1, 301)]
+cersegsys3_dev_prt_augm = [i for i in range(301, 401)]
 
 
 def visualize(PATH, View="Axial_View", cmap=None):
@@ -375,8 +380,9 @@ class DataGenerator(keras.utils.Sequence):
         y = []
 
         for i, ID in enumerate(list_ids_temp):
-            x = get_data(self.root + self.in_folder + '/' + ID).round().astype(np.uint8)
+            x = get_data(self.root + self.in_folder + '/' + ID)
             if self.histogram_equalization is True:
+                x = x.round().astype(np.uint8)
                 x = histeq(x)
             X.append(x[None, ...])
 
@@ -404,7 +410,8 @@ class DataGenerator(keras.utils.Sequence):
                 else:
                     # segmentation, or non binary parcellation
                     if self.binary:
-                        y.append(to_uint8(get_data(self.root + self.in_folder + '/' + self.outputs[ID])))
+                        #y.append(to_uint8(get_data(self.root + self.in_folder + '/' + self.outputs[ID])))
+                        y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]))
                     else:
                         y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)[None, ...])
             else:

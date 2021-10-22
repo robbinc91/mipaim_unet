@@ -3,7 +3,7 @@ from keras.layers import Conv3D, Conv3DTranspose, Concatenate, \
   
 from keras.layers.normalization import BatchNormalization
 from encoder import basic_rdim_inception, basic_naive_inception
-
+from keras_contrib.layers import InstanceNormalization
 
 def decode_parcellation(layers,
                         naive=False,
@@ -162,7 +162,8 @@ def decode_inception(layers,
                      IMAGE_ORDERING='channels_first',
                      dropout=None,
                      only_3x3_filters=False,
-                     filters_dim=None):
+                     filters_dim=None,
+                     instance_normalization=False):
 
     if filters_dim is None:
         filters_dim = [8, 16, 32, 64, 128]
@@ -180,6 +181,11 @@ def decode_inception(layers,
                             padding='same',
                             data_format=IMAGE_ORDERING)(layer_6)
 
+    normalization_axis = 1 if IMAGE_ORDERING is 'channels_first' else -1
+
+    if instance_normalization is True:
+        layer_6 = InstanceNormalization(axis=normalization_axis)(layer_6)
+
     layer_7 = Concatenate(axis=1)([layers[3], layer_6])
     layer_7 = fn(layer_7, filters_dim[3], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
     # layer_7 = UpSampling3D(size=(3, 3, 3))(layer_7)
@@ -189,6 +195,9 @@ def decode_inception(layers,
                             strides=2,
                             padding='same',
                             data_format=IMAGE_ORDERING)(layer_7)
+
+    if instance_normalization is True:
+        layer_7 = InstanceNormalization(axis=normalization_axis)(layer_7)
 
     layer_8 = Concatenate(axis=1)([layers[2], layer_7])
     layer_8 = fn(layer_8, filters_dim[2], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
@@ -200,6 +209,9 @@ def decode_inception(layers,
                             padding='same',
                             data_format=IMAGE_ORDERING)(layer_8)
 
+    if instance_normalization is True:
+        layer_8 = InstanceNormalization(axis=normalization_axis)(layer_8)
+
     layer_9 = Concatenate(axis=1)([layers[1], layer_8])
     layer_9 = fn(layer_9, filters_dim[1], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
     # layer_9 = UpSampling3D(size=(3, 3, 3))(layer_9)
@@ -210,8 +222,14 @@ def decode_inception(layers,
                             padding='same',
                             data_format=IMAGE_ORDERING)(layer_9)
 
+    if instance_normalization is True:
+        layer_9 = InstanceNormalization(axis=normalization_axis)(layer_9)
+
     layer_10 = Concatenate(axis=1)([layers[0], layer_9])
     layer_10 = fn(layer_10, filters_dim[0], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+
+    if instance_normalization is True:
+        layer_10 = InstanceNormalization(axis=normalization_axis)(layer_10)
 
     _output = Conv(filters=1,
                   kernel_size=1,
