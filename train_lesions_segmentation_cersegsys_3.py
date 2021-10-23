@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
         # Use Dice and jaccard Scores
-        __output_folder + 'best.h5',
+        __output_folder + 'best-augm.h5',
         monitor='val_soft_dice_score',
         verbose=1,
         save_best_only=False,
