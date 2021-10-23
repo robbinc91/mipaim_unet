@@ -150,9 +150,10 @@ def decode_parcellation(layers,
     _output = BatchNormalization()(_output)
     _output = Conv(filters=num_labels,
                    kernel_size=1,
+                   activation='relu',
                    padding='valid',
                    data_format=IMAGE_ORDERING)(_output)
-    _output = Activation('softmax')(_output)
+    #_output = Activation('softmax')(_output)
 
     return _output
 
