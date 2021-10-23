@@ -20,12 +20,12 @@ cersegsys_train_prt = [31, 32, 33, 36, 37, 38, 42]
 cersegsys_dev_prt = [34, 39, 41]
 cersegsys_test_prt = [35, 40, 43, 44]
 
-cersegsys_train_prt_augm = [i for i in range(1, 71)]
-cersegsys_dev_prt_augm = [i for i in range(71, 101)]
+#cersegsys_train_prt_augm = [i for i in range(1, 71)]
+#cersegsys_dev_prt_augm = [i for i in range(71, 101)]
 
 
-cersegsys3_train_prt_augm = [i for i in range(1, 301)]
-cersegsys3_dev_prt_augm = [i for i in range(301, 401)]
+cersegsys_train_prt_augm = [i for i in range(1, 301)]
+cersegsys_dev_prt_augm = [i for i in range(301, 401)]
 
 
 def visualize(PATH, View="Axial_View", cmap=None):
