@@ -62,7 +62,8 @@ def inception_unet_semantic_segmentation(shape=(1, 240, 240, 48),
                                   only_3x3_filters=only_3x3_filters,
                                   dropout=dropout,
                                   filters_dim=filters_dim,
-                                  num_labels=num_labels)
+                                  num_labels=num_labels,
+                                  instance_normalization=instance_normalization)
 
     return Model(_input, _output)
 

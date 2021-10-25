@@ -11,7 +11,8 @@ def decode_parcellation(layers,
                         dropout=None,
                         only_3x3_filters=False,
                         filters_dim=None,
-                        num_labels=28):
+                        num_labels=28,
+                        instance_normalization=False):
 
     if filters_dim is None:
         filters_dim = [8, 16, 32, 64, 128]
@@ -42,6 +43,11 @@ def decode_parcellation(layers,
                             padding='same',
                             data_format=IMAGE_ORDERING)(layer_6)
 
+    normalization_axis = 1 if IMAGE_ORDERING is 'channels_first' else -1
+
+    if instance_normalization is True:
+        layer_6 = InstanceNormalization(axis=normalization_axis)(layer_6)
+
     layer_61 = Conv(filters=num_labels,
                    kernel_size=1,
                    activation='relu',
@@ -66,6 +72,9 @@ def decode_parcellation(layers,
                             strides=2,
                             padding='same',
                             data_format=IMAGE_ORDERING)(layer_7)
+
+    if instance_normalization is True:
+        layer_7 = InstanceNormalization(axis=normalization_axis)(layer_7)
 
     layer_71 = Conv(filters=num_labels,
                     kernel_size=1,
@@ -92,6 +101,9 @@ def decode_parcellation(layers,
                             padding='same',
                             data_format=IMAGE_ORDERING)(layer_8)
 
+    if instance_normalization is True:
+        layer_8 = InstanceNormalization(axis=normalization_axis)(layer_8)
+
     layer_81 = Conv(filters=num_labels,
                     kernel_size=1,
                     activation='relu',
@@ -116,6 +128,9 @@ def decode_parcellation(layers,
                             padding='same',
                             data_format=IMAGE_ORDERING)(layer_9)
 
+    if instance_normalization is True:
+        layer_9 = InstanceNormalization(axis=normalization_axis)(layer_9)
+
     layer_91 = Conv(filters=num_labels,
                     kernel_size=1,
                     activation='relu',
@@ -132,6 +147,9 @@ def decode_parcellation(layers,
 
     layer_10 = Concatenate(axis=1)([layers[0], layer_9])
     layer_10 = fn(layer_10, filters_dim[0], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+
+    if instance_normalization is True:
+        layer_10 = InstanceNormalization(axis=normalization_axis)(layer_10)
 
     _output = Conv(filters=num_labels,
                    kernel_size=3,
