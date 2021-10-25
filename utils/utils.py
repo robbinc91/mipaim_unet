@@ -16,16 +16,20 @@ train_prt_augm = [i for i in range(1, 250)]
 dev_prt_augm = [i for i in range(250, 331)]
 
 # Cerebellum parcellation
-cersegsys_train_prt = [31, 32, 33, 36, 37, 38, 42]
-cersegsys_dev_prt = [34, 39, 41]
-cersegsys_test_prt = [35, 40, 43, 44]
+#cersegsys_train_prt = [31, 32, 33, 36, 37, 38, 42]
+#cersegsys_dev_prt = [34, 39, 41]
+#cersegsys_test_prt = [35, 40, 43, 44]
+
+cersegsys_train_prt = [32, 33, 37, 38, 42, 45, 46, 50, 51, 52]
+cersegsys_dev_prt = [31, 36, 41, 47]
+cersegsys_test_prt = [34, 35, 39, 40, 43, 44, 48, 49, 53, 54]
 
 #cersegsys_train_prt_augm = [i for i in range(1, 71)]
 #cersegsys_dev_prt_augm = [i for i in range(71, 101)]
 
 
-cersegsys_train_prt_augm = [i for i in range(1, 301)]
-cersegsys_dev_prt_augm = [i for i in range(301, 401)]
+cersegsys_train_prt_augm = [i for i in range(1, 500)]
+cersegsys_dev_prt_augm = [i for i in range(501, 561)]
 
 
 def visualize(PATH, View="Axial_View", cmap=None):

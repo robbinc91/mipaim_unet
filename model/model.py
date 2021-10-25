@@ -46,14 +46,16 @@ def inception_unet_semantic_segmentation(shape=(1, 240, 240, 48),
                                          dropout=None,
                                          filters_dim=None,
                                          num_labels=28,
-                                         skip_connections_treatment_number=0):
+                                         skip_connections_treatment_number=0,
+                                         instance_normalization=False):
     _input = Input(shape=shape)
     encoded_layers = encode_inception(_input,
                                       False,
                                       IMAGE_ORDERING=IMAGE_ORDERING,
                                       only_3x3_filters=only_3x3_filters,
                                       filters_dim=filters_dim,
-                                      skip_connections_treatment_number=skip_connections_treatment_number)
+                                      skip_connections_treatment_number=skip_connections_treatment_number,
+                                      instance_normalization=instance_normalization)
     _output = decode_parcellation(encoded_layers,
                                   False,
                                   IMAGE_ORDERING=IMAGE_ORDERING,
