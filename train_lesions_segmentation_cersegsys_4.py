@@ -34,7 +34,7 @@ if __name__ == '__main__':
                    metrics=[dice_coefficient])
     model_.summary()
 
-    partition, outputs = create_cersegsys_partitions(label=_label, use_augmentation=True)
+    partition, outputs = create_cersegsys_partitions(label=_label, use_augmentation=False)
     train_generator = DataGenerator(partition['train'],
                                     outputs,
                                     batch_size=1,
