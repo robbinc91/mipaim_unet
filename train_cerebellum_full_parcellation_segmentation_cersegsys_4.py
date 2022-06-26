@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # 400 epochs per label
     EPOCHS = 400
 
-    _label = 'lesions'
+    _label = 'parcellation-x'
 
     __output_folder = '{0}{1}/'.format(output_folder, _label)
     if not os.path.exists(__output_folder):
@@ -34,7 +34,7 @@ if __name__ == '__main__':
                    metrics=[dice_coefficient])
     model_.summary()
 
-    partition, outputs = create_cersegsys_partitions(label=_label, use_augmentation=False, second_lbl='-histeq')
+    partition, outputs = create_cersegsys_partitions(label=_label, use_augmentation=False)
     train_generator = DataGenerator(partition['train'],
                                     outputs,
                                     batch_size=1,
@@ -55,7 +55,7 @@ if __name__ == '__main__':
                                   binary=True)
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
-      __output_folder + 'binpmodel.epoch={epoch:03d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
+      __output_folder + 'model.epoch={epoch:03d}.val_dice_coefficient={val_dice_coefficient:.5f}.h5',
         monitor='val_dice_coefficient',
         verbose=1,
         save_best_only=False,
@@ -78,6 +78,6 @@ if __name__ == '__main__':
                                    epochs=EPOCHS,
                                    use_multiprocessing=False,
                                    callbacks=callbacks)
-    model_.save(__output_folder+'binpmodel-{0}.h5'.format(_label))
+    model_.save(__output_folder+'model-{0}.h5'.format(_label))
 
 

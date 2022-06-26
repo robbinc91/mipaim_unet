@@ -162,16 +162,18 @@ def decode_parcellation(layers,
     # print(_output.shape)
     _output = Add()([layer_91, _output])
 
-    if dropout is not None:
-        _output = Dropout(dropout)(_output)
-
-    _output = BatchNormalization()(_output)
     _output = Conv(filters=num_labels,
                    kernel_size=1,
                    activation='relu',
                    padding='valid',
                    data_format=IMAGE_ORDERING)(_output)
-    #_output = Activation('softmax')(_output)
+
+    if dropout is not None:
+        _output = Dropout(dropout)(_output)
+
+
+    
+    _output = Activation('softmax')(_output)
 
     return _output
 
@@ -250,6 +252,7 @@ def decode_inception(layers,
     if instance_normalization is True:
         layer_10 = InstanceNormalization(axis=normalization_axis)(layer_10)
 
+    
     _output = Conv(filters=1,
                   kernel_size=1,
                   activation='relu',
@@ -259,6 +262,11 @@ def decode_inception(layers,
 
     if dropout is not None:
         _output = Dropout(dropout)(_output)
+
+
+    _output = Activation('softmax')(_output)
+
+    
 
     return _output
 

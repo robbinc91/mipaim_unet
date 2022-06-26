@@ -20,9 +20,9 @@ dev_prt_augm = [i for i in range(250, 331)]
 #cersegsys_dev_prt = [34, 39, 41]
 #cersegsys_test_prt = [35, 40, 43, 44]
 
-cersegsys_train_prt = [32, 33, 37, 38, 42, 45, 46, 50, 51, 52]
-cersegsys_dev_prt = [31, 36, 41, 47]
-cersegsys_test_prt = [34, 35, 39, 40, 43, 44, 48, 49, 53, 54]
+cersegsys_train_prt = [31, 32, 33, 35, 37, 38, 39, 42, 44, 45, 46, 49, 50, 51, 52, 54]
+cersegsys_dev_prt = [36, 41, 47]
+cersegsys_test_prt = [34, 40, 43, 48, 53]
 
 #cersegsys_train_prt_augm = [i for i in range(1, 71)]
 #cersegsys_dev_prt_augm = [i for i in range(71, 101)]
@@ -270,40 +270,40 @@ def create_hammers_partitions_new(label='cerebellum', use_augmentation=False):
 
     return partition, outputs
 
-def cersegsys_partition_generator(rng, rnga=None):
+def cersegsys_partition_generator(rng, rnga=None, second_lbl=''):
     if rnga is None:
-      return ['a{:02d}.nii.gz'.format(i) for i in rng]
-    return ['a{:02d}.nii.gz'.format(i) for i in rng] + ['a{:03d}.nii.gz'.format(i) for i in rnga]
+      return ['a{:02d}{}.nii.gz'.format(i, second_lbl) for i in rng]
+    return ['a{:02d}{}.nii.gz'.format(i, second_lbl) for i in rng] + ['a{:03d}{}.nii.gz'.format(i, second_lbl) for i in rnga]
 
 
-def cersegsys_output_generator(rng, rnga=None, label='cerebellum'):
+def cersegsys_output_generator(rng, rnga=None, label='cerebellum', second_lbl=''):
     if rnga is None:
       return {
-          'a{:02d}.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+          'a{:02d}{}.nii.gz'.format(i, second_lbl): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
       }
     
     ret = {
-          'a{:02d}.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+          'a{:02d}{}.nii.gz'.format(i, second_lbl): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
       }
     ret.update({
-          'a{:03d}.nii.gz'.format(i): 'a{:03d}-{}.nii.gz'.format(i, label) for i in rnga
+          'a{:03d}{}.nii.gz'.format(i, second_lbl): 'a{:03d}-{}.nii.gz'.format(i, label) for i in rnga
       })
     return ret
 
 
-def create_cersegsys_partitions(label='cerebellum', use_augmentation=False):
+def create_cersegsys_partitions(label='cerebellum', use_augmentation=False, second_lbl=''):
     if use_augmentation is False:
         partition = {
-          'train': cersegsys_partition_generator(cersegsys_train_prt, None),
-          'validation': cersegsys_partition_generator(cersegsys_dev_prt, None)
+          'train': cersegsys_partition_generator(cersegsys_train_prt, None, second_lbl),
+          'validation': cersegsys_partition_generator(cersegsys_dev_prt, None, second_lbl)
         }
-        outputs = cersegsys_output_generator(cersegsys_train_prt + cersegsys_dev_prt, None, label)
+        outputs = cersegsys_output_generator(cersegsys_train_prt + cersegsys_dev_prt, None, label, second_lbl)
     else:
         partition = {
-          'train': cersegsys_partition_generator(cersegsys_train_prt, cersegsys_train_prt_augm),
-          'validation': cersegsys_partition_generator(cersegsys_dev_prt, cersegsys_dev_prt_augm)
+          'train': cersegsys_partition_generator(cersegsys_train_prt, cersegsys_train_prt_augm, second_lbl),
+          'validation': cersegsys_partition_generator(cersegsys_dev_prt, cersegsys_dev_prt_augm, second_lbl)
         }
-        outputs = cersegsys_output_generator(cersegsys_train_prt + cersegsys_dev_prt, cersegsys_train_prt_augm + cersegsys_dev_prt_augm, label)
+        outputs = cersegsys_output_generator(cersegsys_train_prt + cersegsys_dev_prt, cersegsys_train_prt_augm + cersegsys_dev_prt_augm, label, second_lbl)
 
     return partition, outputs
 
