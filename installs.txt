@@ -20,3 +20,5 @@
 
 !pip install nilearn
 !pip install git+https://www.github.com/keras-team/keras-contrib.git
+
+!pip install descartes==1.1.0
