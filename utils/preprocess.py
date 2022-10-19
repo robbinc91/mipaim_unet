@@ -123,17 +123,7 @@ def exhautive_registration(fixedImageFilter, movingImageFile):
 
     R.SetInterpolator(sitk.sitkLinear)
 
-    # R.AddCommand(sitk.sitkIterationEvent, lambda: command_iteration(R))
-
     transform = R.Execute(fixed, moving)
-
-    # print("-------")
-    # print(outTx)
-    # print("Optimizer stop condition: {0}"
-    #      .format(R.GetOptimizerStopConditionDescription()))
-    # print(" Iteration: {0}".format(R.GetOptimizerIteration()))
-    # print(" Metric value: {0}".format(R.GetMetricValue()))
-
     # sitk.WriteTransform(outTx, sys.argv[3])
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(fixed)
