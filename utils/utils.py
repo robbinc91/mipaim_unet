@@ -20,16 +20,19 @@ dev_prt_augm = [i for i in range(250, 331)]
 #cersegsys_dev_prt = [34, 39, 41]
 #cersegsys_test_prt = [35, 40, 43, 44]
 
-cersegsys_train_prt = [31, 32, 33, 35, 37, 38, 39, 42, 44, 45, 46, 49, 50, 51, 52, 54]
-cersegsys_dev_prt = [36, 41, 47]
-cersegsys_test_prt = [34, 40, 43, 48, 53]
+cersegsys_test_prt = [32, 34, 35, 37, 38, 40, 43, 48, 53, 55, 60, 62, 66, 65, 70]
+cersegsys_dev_prt = [34, 35, 36, 41, 54]
+cersegsys_train_prt = [i for i in range(31, 71) if i not in cersegsys_test_prt and i not in cersegsys_dev_prt]
+
+
+
 
 #cersegsys_train_prt_augm = [i for i in range(1, 71)]
 #cersegsys_dev_prt_augm = [i for i in range(71, 101)]
 
 
-cersegsys_train_prt_augm = [i for i in range(1, 500)]
-cersegsys_dev_prt_augm = [i for i in range(501, 561)]
+cersegsys_train_prt_augm = [i for i in range(1, 401)]  # Added new images
+cersegsys_dev_prt_augm = [i for i in range(401, 501)]
 
 
 def visualize(PATH, View="Axial_View", cmap=None):
@@ -328,13 +331,9 @@ class DataGenerator(keras.utils.Sequence):
                  n_channels=1,
                  shuffle=True,
                  root='.',
-                 rescale=1./255,
-                 shear_range=0.2,
-                 zoom_range=0.2,
-                 horizontal_flip=True,
                  histogram_equalization=False,
                  in_folder='preprocessed-full',
-                 binary=True,
+                 binary=False,
                  labels=None,
                  filter_label=None,
                  is_segmentation=True):
@@ -364,6 +363,8 @@ class DataGenerator(keras.utils.Sequence):
         return int(np.floor(len(self.list_ids) / self.batch_size))
 
     def on_epoch_end(self):
+        print('on epoch end')
+        print('-'*50)
         self.indexes = np.arange(len(self.list_ids))
 
         if self.shuffle is True:
@@ -413,11 +414,15 @@ class DataGenerator(keras.utils.Sequence):
                     y.append(to_uint8(np.array(_data == self.filter_label))[None, ...])
                 else:
                     # segmentation, or non binary parcellation
-                    if self.binary:
-                        #y.append(to_uint8(get_data(self.root + self.in_folder + '/' + self.outputs[ID])))
-                        y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]))
-                    else:
-                        y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)[None, ...])
+                    y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]).astype(np.float32)[None, ...])
+                    print(y[-1].shape)
+                    # TODO: check this
+                    #if self.binary:
+                    #    #print('----------------------------'*10)
+                    #    #y.append(to_uint8(get_data(self.root + self.in_folder + '/' + self.outputs[ID])))
+                    #    y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]))
+                    #else:
+                    #    y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)[None, ...])
             else:
                 # it's a classification task
                 # return the item's classes (no multiclass items)

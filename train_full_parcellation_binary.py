@@ -24,13 +24,15 @@ if __name__ == '__main__':
     if not os.path.exists(__output_folder):
         os.mkdir(__output_folder)
 
-    model_ = parcellation_inception_unet_2(labels=len(_labels), dropout=0.2, only_3x3_filter=True, filters_dim=[2, 4, 4, 8, 16])
+    model_ = parcellation_inception_unet_2(labels=len(
+        _labels), dropout=0.2, only_3x3_filter=True, filters_dim=[2, 4, 4, 8, 16])
     model_.compile(optimizer='adam',
                    loss=soft_dice_loss,
                    metrics=[soft_dice_score])
     model_.summary()
 
-    partition, outputs = create_cersegsys_partitions(label=_label, use_augmentation=True)
+    partition, outputs = create_cersegsys_partitions(
+        label=_label, use_augmentation=True)
     train_generator = DataGenerator(partition['train'], outputs, batch_size=1, root=CERSEGSYS_2_ROOT,
                                     shuffle=True, histogram_equalization=True,
                                     in_folder='preprocessed_parcellation_final_2',
@@ -43,7 +45,8 @@ if __name__ == '__main__':
                                   labels=_labels)
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
-        __output_folder + 'model.epoch={epoch:03d}.val_soft_dice_score={val_soft_dice_score:.5f}.h5',
+        __output_folder +
+        'model.epoch={epoch:03d}.val_soft_dice_score={val_soft_dice_score:.5f}.h5',
         monitor='val_soft_dice_score',
         verbose=1,
         save_best_only=False,
@@ -63,5 +66,3 @@ if __name__ == '__main__':
                                    use_multiprocessing=True,
                                    callbacks=callbacks)
     model_.save(__output_folder + 'model-{0}.h5'.format(_label))
-    
-

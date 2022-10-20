@@ -51,6 +51,8 @@ def dice_coefficient(y_true, y_pred, smooth=.1):
          =  2*sum(|A*B|)/(sum(A^2)+sum(B^2))
     ref: https://arxiv.org/pdf/1606.04797v1.pdf
     """
+
+    
     y_true = K.flatten(y_true)
     y_pred = K.flatten(y_pred)
     intersection = K.sum(K.abs(y_true * y_pred))
@@ -71,6 +73,10 @@ def soft_dice_score(image1, image2, axis=(-3, -2, -1), eps=0.001):
         dice (float): The average Dice
 
     """
+
+    
+    #image1 = K.cast(image1, 'float32')
+    #image2 = K.cast(image2, 'float32')
     intersection = K.sum(image1 * image2, axis=axis)
     sum1 = K.sum(image1, axis=axis)
     sum2 = K.sum(image2, axis=axis)
@@ -80,6 +86,8 @@ def soft_dice_score(image1, image2, axis=(-3, -2, -1), eps=0.001):
 
 
 def soft_dice_loss(y_true, y_pred):
+    print(y_true)
+    print(y_pred)
     return 1-soft_dice_score(y_true, y_pred)
 
 
