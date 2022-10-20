@@ -1,1 +1,1 @@
-from outputs import output_mapper
+from output.output import output_mapper

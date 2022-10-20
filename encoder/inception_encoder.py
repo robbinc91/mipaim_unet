@@ -1,5 +1,6 @@
 from keras.layers import Conv3D, MaxPool3D, Concatenate, MaxPool2D, Conv2D
 from keras_contrib.layers import InstanceNormalization
+from attention import cbam_block
 
 def basic_rdim_inception(img_input,
                          nfilters=64,
@@ -75,6 +76,7 @@ def encode_inception(img_input,
                      filters_dim=None,
                      carry_input=False,
                      skip_connections_treatment_number=0,
+                     skip_connections_method='inception', # 'inception', 'conv', 'attention'
                      instance_normalization=False):
 
     fn = basic_naive_inception if naive else basic_rdim_inception
@@ -135,35 +137,43 @@ def encode_inception(img_input,
         layer_5 = InstanceNormalization(axis=normalization_axis)(layer_5)
 
     for i in range(skip_connections_treatment_number):
-        layer_1 = fn(layer_1,
-                     filters_dim[0],
-                     IMAGE_ORDERING=IMAGE_ORDERING,
-                     only_3x3_filters=only_3x3_filters,
-                     carry_input=carry_input)
 
-        layer_2 = fn(layer_2,
-                     filters_dim[1],
-                     IMAGE_ORDERING=IMAGE_ORDERING,
-                     only_3x3_filters=only_3x3_filters,
-                     carry_input=carry_input)
+        if skip_connections_method is 'conv' or skip_connections_method is 'inception':
+            layer_1 = fn(layer_1,
+                        filters_dim[0],
+                        IMAGE_ORDERING=IMAGE_ORDERING,
+                        only_3x3_filters=only_3x3_filters,
+                        carry_input=carry_input)
 
-        layer_3 = fn(layer_3,
-                     filters_dim[2],
-                     IMAGE_ORDERING=IMAGE_ORDERING,
-                     only_3x3_filters=only_3x3_filters,
-                     carry_input=carry_input)
+            layer_2 = fn(layer_2,
+                        filters_dim[1],
+                        IMAGE_ORDERING=IMAGE_ORDERING,
+                        only_3x3_filters=only_3x3_filters,
+                        carry_input=carry_input)
 
-        layer_4 = fn(layer_4,
-                     filters_dim[3],
-                     IMAGE_ORDERING=IMAGE_ORDERING,
-                     only_3x3_filters=only_3x3_filters,
-                     carry_input=carry_input)
+            layer_3 = fn(layer_3,
+                        filters_dim[2],
+                        IMAGE_ORDERING=IMAGE_ORDERING,
+                        only_3x3_filters=only_3x3_filters,
+                        carry_input=carry_input)
 
-        layer_5 = fn(layer_5,
-                     filters_dim[4],
-                     IMAGE_ORDERING=IMAGE_ORDERING,
-                     only_3x3_filters=only_3x3_filters,
-                     carry_input=carry_input)
+            layer_4 = fn(layer_4,
+                        filters_dim[3],
+                        IMAGE_ORDERING=IMAGE_ORDERING,
+                        only_3x3_filters=only_3x3_filters,
+                        carry_input=carry_input)
+
+            layer_5 = fn(layer_5,
+                        filters_dim[4],
+                        IMAGE_ORDERING=IMAGE_ORDERING,
+                        only_3x3_filters=only_3x3_filters,
+                        carry_input=carry_input)
+        else:
+            layer_1 = cbam_block(layer_1)
+            layer_2 = cbam_block(layer_2)
+            layer_3 = cbam_block(layer_3)
+            layer_4 = cbam_block(layer_4)
+            layer_5 = cbam_block(layer_5)
 
 
     return [layer_1, layer_2, layer_3, layer_4, layer_5]

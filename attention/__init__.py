@@ -1,2 +1,1 @@
-import imp
-from attention import *
+from attention.attention import *

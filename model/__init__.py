@@ -5,4 +5,5 @@ from model.model import unet, \
     parcellation_inception_unet_reduced, \
     classification_model, \
     parcellation_inception_unet_2, \
-    inception_unet_semantic_segmentation
+    inception_unet_semantic_segmentation, \
+    mipaim_unet

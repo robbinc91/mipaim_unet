@@ -1,0 +1,9 @@
+{    
+    "labels": {
+        "Background":             0,
+        "Medulla oblongata":      1, 
+        "Olive":                  2, 
+        "Midbrain":               3, 
+        "Cerebellum":             4
+    }
+}

@@ -11,6 +11,7 @@ from common import *
 import visualkeras
 from PIL import ImageFont
 font = ImageFont.truetype("arial.ttf", 32)
+from keras.utils.vis_utils import plot_model
 
 if __name__ == '__main__':
     
@@ -51,5 +52,6 @@ if __name__ == '__main__':
                    loss=soft_dice_loss,
                    metrics=[soft_dice_score])
     _model.summary()
-    visualkeras.graph_view(_model, to_file='mipaim_unet.png')
+    #visualkeras.graph_view(_model, to_file='mipaim_unet.png')
+    plot_model(_model, to_file='mipaim_unet.png', show_shapes=True)
 

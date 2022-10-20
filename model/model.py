@@ -4,7 +4,8 @@ from keras.layers import Conv3D, MaxPool3D
 from keras.layers import Conv3D, Conv3DTranspose, Concatenate
 
 from encoder import encode, encode_inception
-from decoder import decode, decode_inception, decode_classification, decode_parcellation
+from decoder import decode, decode_inception, decode_inception_v2, decode_classification, decode_parcellation
+from output import output_mapper
 
 
 def unet(t1, FLAIR=None, IR=None, IMAGE_ORDERING='channels_first', shape=(1, 240, 240, 48)):
@@ -18,7 +19,8 @@ def unet(t1, FLAIR=None, IR=None, IMAGE_ORDERING='channels_first', shape=(1, 240
     """
 
     # encoder stuff
-    inputs, outputs, conv_21, conv_32, = encode(t1, FLAIR, IR, IMAGE_ORDERING, shape)
+    inputs, outputs, conv_21, conv_32, = encode(
+        t1, FLAIR, IR, IMAGE_ORDERING, shape)
 
     # decoder stuff
     inputs, output = decode(inputs, outputs, conv_21, conv_32, IMAGE_ORDERING)
@@ -34,8 +36,10 @@ def inception_unet(shape=(1, 240, 240, 48),
                    skip_connections_treatment_number=0,
                    instance_normalization=False):
     _input = Input(shape=shape)
-    encoded_layers = encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, filters_dim=filters_dim, skip_connections_treatment_number=skip_connections_treatment_number, instance_normalization=instance_normalization)
-    _output = decode_inception(encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, dropout=dropout, filters_dim=filters_dim, instance_normalization=instance_normalization)
+    encoded_layers = encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, filters_dim=filters_dim,
+                                      skip_connections_treatment_number=skip_connections_treatment_number, instance_normalization=instance_normalization)
+    _output = decode_inception(encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters,
+                               dropout=dropout, filters_dim=filters_dim, instance_normalization=instance_normalization)
 
     return Model(_input, _output)
 
@@ -68,6 +72,42 @@ def inception_unet_semantic_segmentation(shape=(1, 240, 240, 48),
     return Model(_input, _output)
 
 
+def mipaim_unet(
+        shape=(1, 240, 240, 48),
+        IMAGE_ORDERING='channels_first',
+        only_3x3_filters=False,
+        dropout=None,
+        filters_dim=None,
+        instance_normalization=False,
+        num_labels=28):
+    # Medical Image Parcellation with Attention and Inception Modules
+    # MIPAIM
+    _input = Input(shape=shape)
+    _encoded_layers = encode_inception(
+        _input,
+        False,
+        IMAGE_ORDERING=IMAGE_ORDERING,
+        only_3x3_filters=only_3x3_filters,
+        filters_dim=filters_dim,
+        skip_connections_treatment_number=1,
+        skip_connections_method='attention')
+
+    _output = decode_inception_v2(
+        _encoded_layers,
+        False,
+        IMAGE_ORDERING=IMAGE_ORDERING,
+        only_3x3_filters=only_3x3_filters,
+        dropout=dropout,
+        filters_dim=filters_dim,
+        instance_normalization=instance_normalization)
+
+    _output = output_mapper(
+        _output,
+        num_labels,
+        'relu',
+        IMAGE_ORDERING=IMAGE_ORDERING)
+
+    return Model(_input, _output)
 
 
 def parcellation_inception_unet(shape=(1, 128, 80, 80), IMAGE_ORDERING='channels_first', only_3x3_filter=False, dropout=None, labels=28,  filters_dim=None):
@@ -75,8 +115,10 @@ def parcellation_inception_unet(shape=(1, 128, 80, 80), IMAGE_ORDERING='channels
     _encoded_layers = []
     _outputs = []
     for i in range(labels):
-        _encoded_layers.append(encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filter, filters_dim=filters_dim))
-        _outputs.append(decode_inception(_encoded_layers[i], False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filter, dropout=dropout, filters_dim=filters_dim))
+        _encoded_layers.append(encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING,
+                               only_3x3_filters=only_3x3_filter, filters_dim=filters_dim))
+        _outputs.append(decode_inception(_encoded_layers[i], False, IMAGE_ORDERING=IMAGE_ORDERING,
+                        only_3x3_filters=only_3x3_filter, dropout=dropout, filters_dim=filters_dim))
 
     _output = Concatenate(axis=1)(_outputs)
     _output = Activation('softmax')(_output)
@@ -85,10 +127,12 @@ def parcellation_inception_unet(shape=(1, 128, 80, 80), IMAGE_ORDERING='channels
 
 def parcellation_inception_unet_2(shape=(1, 128, 80, 80), IMAGE_ORDERING='channels_first', only_3x3_filter=False, dropout=None, labels=28,  filters_dim=None):
     _input = Input(shape=shape)
-    _encoded_layers = encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filter, filters_dim=filters_dim)
+    _encoded_layers = encode_inception(
+        _input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filter, filters_dim=filters_dim)
     _outputs = []
     for i in range(labels):
-        _outputs.append(decode_inception(_encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filter, dropout=dropout, filters_dim=filters_dim))
+        _outputs.append(decode_inception(_encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING,
+                        only_3x3_filters=only_3x3_filter, dropout=dropout, filters_dim=filters_dim))
 
     _output = Concatenate(axis=1)(_outputs)
     _output = Activation('softmax')(_output)
@@ -104,9 +148,10 @@ def parcellation_inception_unet_reduced(shape=(1, 128, 80, 80),
                                         final_droput=None):
     _input = Input(shape=shape)
 
-    encoded_layers = encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+    encoded_layers = encode_inception(
+        _input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
     general_output = decode_inception(encoded_layers, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters,
-                              dropout=dropout)
+                                      dropout=dropout)
 
     _outputs = []
     for i in range(labels):
@@ -128,7 +173,8 @@ def classification_model(shape=(1, 128, 80, 80),
                          dropout=None):
     _input = Input(shape=shape)
 
-    encoded_layers = encode_inception(_input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+    encoded_layers = encode_inception(
+        _input, False, IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
     _decoded = decode_classification(encoded_layers[-1], dropout=dropout)
 
     return Model(_input, _decoded)
@@ -139,10 +185,12 @@ def model_thresholding():
     img_input = Input(shape=(1, 240, 240, 48))
     conv_1 = Conv3D(filters=16, kernel_size=(3, 3, 3), padding='same', activation='relu', name="CONV3D_1",
                     dilation_rate=(2, 2, 2), data_format=IMAGE_ORDERING)(img_input)
-    maxpool_1 = MaxPool3D(name="MAXPOOL3D_1", data_format=IMAGE_ORDERING)(conv_1)
+    maxpool_1 = MaxPool3D(name="MAXPOOL3D_1",
+                          data_format=IMAGE_ORDERING)(conv_1)
     conv_2 = Conv3D(filters=32, kernel_size=(3, 3, 3), padding='same', activation='relu', name="CONV3D_2",
                     dilation_rate=(2, 2, 2), data_format=IMAGE_ORDERING)(maxpool_1)
-    maxpool_2 = MaxPool3D(name="MAXPOOL3D_2", data_format=IMAGE_ORDERING)(conv_2)
+    maxpool_2 = MaxPool3D(name="MAXPOOL3D_2",
+                          data_format=IMAGE_ORDERING)(conv_2)
     conv_3 = Conv3D(filters=32, kernel_size=(3, 3, 3), padding='same', activation='relu', name="CONV3D_3",
                     dilation_rate=(2, 2, 2), data_format=IMAGE_ORDERING)(maxpool_2)
 

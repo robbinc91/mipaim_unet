@@ -12,6 +12,7 @@ CERSEGSYS_ROOT = './datasets/cersegsys/'
 CERSEGSYS_2_ROOT = './datasets/cersegsys_2/'
 CERSEGSYS_3_ROOT = './datasets/cersegsys_3/'
 CERSEGSYS_4_ROOT = './datasets/cersegsys_4/'
+CERSEGSYS_5_ROOT = './datasets/cersegsys_5/'
 
 ONLY_3X3_FILTERS = True
 MNI_SHAPE = (1, 192, 224, 192)
