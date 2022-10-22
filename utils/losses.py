@@ -73,10 +73,11 @@ def soft_dice_score(image1, image2, axis=(-3, -2, -1), eps=0.001):
         dice (float): The average Dice
 
     """
-
-    
-    #image1 = K.cast(image1, 'float32')
-    #image2 = K.cast(image2, 'float32')
+    image2 = stable_one_hot(image2)
+    intersection = K.sum(K.abs(image1 * image2), axis=-1)
+    dices =  (2. * intersection + eps) / (K.sum(K.square(image1),-1) + K.sum(K.square(image2),-1) + eps)
+    dice = K.mean(dices)
+    return dice
     intersection = K.sum(image1 * image2, axis=axis)
     sum1 = K.sum(image1, axis=axis)
     sum2 = K.sum(image2, axis=axis)
@@ -84,9 +85,24 @@ def soft_dice_score(image1, image2, axis=(-3, -2, -1), eps=0.001):
     dice = K.mean(dices)
     return dice
 
+def stable_one_hot(vec):
+    """
+    Args:
+        vec: tf.Tensor, a batch of logits to be encoded
+    
+    Returns:
+        tf.Tensor, a batch of numerically stable one-hot encoded logits
+    """
+    m = tf.math.reduce_max(vec, axis=1, keepdims=True)
+    e = tf.math.exp(vec - m)
+    mask = tf.cast(tf.math.not_equal(e, 1.0), tf.float32)
+    vec -= 1e9 * mask
+    return tf.nn.softmax(vec, axis=1)
 
 def soft_dice_loss(y_true, y_pred):
     
+    #print(y_true)
+    #print(y_pred)
     return 1-soft_dice_score(y_true, y_pred)
 
 

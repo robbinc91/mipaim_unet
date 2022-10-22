@@ -40,7 +40,7 @@ if __name__ == '__main__':
     model_.compile(optimizer='adam',
                    loss=soft_dice_loss,
                    metrics=[soft_dice_score])
-    model_.summary()
+    #model_.summary()
 
     partition, outputs = create_cersegsys_partitions(
         label=_label, use_augmentation=True, second_lbl='-clahe')

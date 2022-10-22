@@ -13,7 +13,7 @@ def output_mapper(_input, num_labels=1, activation='relu', IMAGE_ORDERING='chann
                   padding='same',
                   data_format=IMAGE_ORDERING)(_input)
 
-    #_output = Activation('softmax')(_output)
+    _output = Activation('softmax')(_output)
 
     return _output
 

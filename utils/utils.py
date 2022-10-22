@@ -6,7 +6,8 @@ import keras
 from utils.preprocess import to_uint8, get_data, histeq
 import math
 from keras.utils import to_categorical
-
+from sklearn.preprocessing import OneHotEncoder
+import tensorflow as tf
 
 # Cerebellum segmentation
 train_prt = [i for i in range(1, 19)] + [31, 34, 35, 36, 39, 43, 44]
@@ -403,6 +404,7 @@ class DataGenerator(keras.utils.Sequence):
                         yLabels.append(np.array(_data == label_num).astype(int))
                         #yLabels.append(to_uint8(np.array(_data == label_num))[None, ...])
                         #yLabels.append(to_uint8(np.array(_data == label_num)))
+                    
                     y.append(yLabels)
                     #y.append(_data)
 
@@ -412,12 +414,17 @@ class DataGenerator(keras.utils.Sequence):
                     y.append(to_uint8(np.array(_data == self.filter_label))[None, ...])
                 else:
                     # segmentation, or non binary parcellation
-                    tmp = get_data(self.root + self.in_folder + '/' + self.outputs[ID])
-                    _img = []
-                    for i in range(1, 5):
-                        _img.append(tmp == i)
+                    tmp = get_data(self.root + self.in_folder + '/' + self.outputs[ID])#[None, ...]
+                    #_img = []
+                    #for i in range(1, 5):
+                    #    _img.append(tmp == i)
                     
-                    _img = np.array(_img).astype(np.float32)#[None, ...]
+                    #_img = np.array(_img).astype(np.float32)#[None, ...]
+                    #one_hot = OneHotEncoder() 
+                    #_img =  np.stack([tmp==i for i in range(1, 5)], axis=0).astype(np.float32)
+                    _img = tf.one_hot(tmp, 4)
+                    _img = tf.transpose(_img, perm=[3, 0, 1, 2])
+                    #print(_img.shape)
                     y.append(_img)
                     # TODO: check this
                     #if self.binary:
