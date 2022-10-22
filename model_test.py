@@ -41,10 +41,10 @@ if __name__ == '__main__':
     #visualkeras.layered_view(_model, to_file='lesions_2.png', legend=True, font=font)
     #visualkeras.graph_view(_model, to_file='lesions_graph.png')
 
-    _model = mipaim_unet(shape=REDUCED_MNI_SHAPE_CERSEGSYS_PARCELLATION,
+    _model = mipaim_unet(shape=REDUCED_MNI_SHAPE_MINE,
                             only_3x3_filters=ONLY_3X3_FILTERS,
                             dropout=0.3,
-                            filters_dim=[16, 16, 32, 64, 64],
+                            filters_dim=[4, 4, 4, 4, 4],
                             instance_normalization=True, 
                             num_labels=4)
 

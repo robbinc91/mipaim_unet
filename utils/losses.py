@@ -86,8 +86,7 @@ def soft_dice_score(image1, image2, axis=(-3, -2, -1), eps=0.001):
 
 
 def soft_dice_loss(y_true, y_pred):
-    print(y_true)
-    print(y_pred)
+    
     return 1-soft_dice_score(y_true, y_pred)
 
 

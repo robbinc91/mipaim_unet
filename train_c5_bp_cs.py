@@ -34,7 +34,7 @@ if __name__ == '__main__':
         shape=REDUCED_MNI_SHAPE_MINE,
         only_3x3_filters=ONLY_3X3_FILTERS,
         dropout=0.3,
-        filters_dim=[8, 16, 32, 64, 128],
+        filters_dim=[2, 2, 2, 4, 4],
         instance_normalization=True,
         num_labels=4)
     model_.compile(optimizer='adam',
@@ -43,10 +43,10 @@ if __name__ == '__main__':
     model_.summary()
 
     partition, outputs = create_cersegsys_partitions(
-        label=_label, use_augmentation=False, second_lbl='-clahe')
+        label=_label, use_augmentation=True, second_lbl='-clahe')
     train_generator = DataGenerator(partition['train'],
                                     outputs,
-                                    batch_size=4,
+                                    batch_size=1,
                                     root=CERSEGSYS_5_ROOT,
                                     shuffle=True,
                                     histogram_equalization=False,
@@ -55,7 +55,7 @@ if __name__ == '__main__':
                                     binary=False)
     val_generator = DataGenerator(partition['validation'],
                                   outputs,
-                                  batch_size=4,
+                                  batch_size=1,
                                   root=CERSEGSYS_5_ROOT,
                                   shuffle=True,
                                   histogram_equalization=False,
@@ -65,13 +65,13 @@ if __name__ == '__main__':
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
         __output_folder +
-        'model.epoch={epoch:03d}.val_dice_score={val_soft_dice_score:.5f}.h5',
-        monitor='val_soft_dice_score',
+        'model.epoch={epoch:03d}.val_dice_score={soft_dice_score:.5f}.h5',
+        monitor='soft_dice_score',
         verbose=1,
         save_best_only=False,
         save_weights_only=False,
         mode='max',
-        save_freq=20
+        #save_freq=20
     )
 
     learning_rate_callback = keras.callbacks.LearningRateScheduler(lr_schedule)
@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     model_.fit(x=train_generator,
                y=None,
-               batch_size=4,
+               batch_size=1,
                validation_data=val_generator,
                epochs=EPOCHS,
                use_multiprocessing=False,

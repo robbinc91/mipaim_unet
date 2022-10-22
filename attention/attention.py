@@ -18,7 +18,7 @@ from keras.layers import GlobalAveragePooling2D, \
 
 # TODO: Convert code to work with 2 and 3D
 
-def cbam_block(cbam_feature, ratio=8):
+def cbam_block(cbam_feature, ratio=8, **params):
     """Contains the implementation of Convolutional Block Attention Module(CBAM) block.
     As described in https://arxiv.org/abs/1807.06521.
     """

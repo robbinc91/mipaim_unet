@@ -89,8 +89,9 @@ def mipaim_unet(
         IMAGE_ORDERING=IMAGE_ORDERING,
         only_3x3_filters=only_3x3_filters,
         filters_dim=filters_dim,
-        skip_connections_treatment_number=1,
-        skip_connections_method='attention')
+        skip_connections_treatment_number=3,
+        skip_connections_method='attention',
+        carry_input=False)
 
     _output = decode_inception_v2(
         _encoded_layers,

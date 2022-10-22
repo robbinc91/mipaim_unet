@@ -79,7 +79,12 @@ def encode_inception(img_input,
                      skip_connections_method='inception', # 'inception', 'conv', 'attention'
                      instance_normalization=False):
 
-    fn = basic_naive_inception if naive else basic_rdim_inception
+    if naive:
+        fn = basic_naive_inception
+    elif naive is None:
+        fn = cbam_block
+    else:
+     fn = basic_rdim_inception
     MaxPool = MaxPool3D if len(img_input.shape) == 5 else MaxPool2D
 
     if filters_dim is None:

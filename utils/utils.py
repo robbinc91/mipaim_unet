@@ -363,8 +363,6 @@ class DataGenerator(keras.utils.Sequence):
         return int(np.floor(len(self.list_ids) / self.batch_size))
 
     def on_epoch_end(self):
-        print('on epoch end')
-        print('-'*50)
         self.indexes = np.arange(len(self.list_ids))
 
         if self.shuffle is True:
@@ -414,8 +412,13 @@ class DataGenerator(keras.utils.Sequence):
                     y.append(to_uint8(np.array(_data == self.filter_label))[None, ...])
                 else:
                     # segmentation, or non binary parcellation
-                    y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]).astype(np.float32)[None, ...])
-                    print(y[-1].shape)
+                    tmp = get_data(self.root + self.in_folder + '/' + self.outputs[ID])
+                    _img = []
+                    for i in range(1, 5):
+                        _img.append(tmp == i)
+                    
+                    _img = np.array(_img).astype(np.float32)#[None, ...]
+                    y.append(_img)
                     # TODO: check this
                     #if self.binary:
                     #    #print('----------------------------'*10)
