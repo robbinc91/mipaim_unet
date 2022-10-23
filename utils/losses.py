@@ -73,17 +73,17 @@ def soft_dice_score(image1, image2, axis=(-3, -2, -1), eps=0.001):
         dice (float): The average Dice
 
     """
-    image2 = stable_one_hot(image2)
-    intersection = K.sum(K.abs(image1 * image2), axis=-1)
-    dices =  (2. * intersection + eps) / (K.sum(K.square(image1),-1) + K.sum(K.square(image2),-1) + eps)
+    #image2 = stable_one_hot(image2)
+    intersection = K.sum(K.abs(image1 * image2), axis=axis)
+    dices =  (2. * intersection + eps) / (K.sum(K.square(image1),axis) + K.sum(K.square(image2),axis) + eps)
     dice = K.mean(dices)
     return dice
-    intersection = K.sum(image1 * image2, axis=axis)
-    sum1 = K.sum(image1, axis=axis)
-    sum2 = K.sum(image2, axis=axis)
-    dices = 2 * (intersection + eps) / (sum1 + sum2 + eps)
-    dice = K.mean(dices)
-    return dice
+    #intersection = K.sum(image1 * image2, axis=axis)
+    #sum1 = K.sum(image1, axis=axis)
+    #sum2 = K.sum(image2, axis=axis)
+    #dices = 2 * (intersection + eps) / (sum1 + sum2 + eps)
+    #dice = K.mean(dices)
+    #return dice
 
 def stable_one_hot(vec):
     """

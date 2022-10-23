@@ -321,6 +321,24 @@ def create_hammers_partitions(label='cerebellum'):
 
     return partition, outputs
 
+def onehot(label_image, num_labels=None):
+    """Performs one-hot encoding.
+
+    Args:
+        label_image (numpy.ndarray): The label image to convert to be encoded.
+        num_labels (int): The total number of labels. If ``None``, it will be
+            calcualted as the number of unique values of input ``label_image``.
+
+    Returns:
+        numpy.ndarray: The encoded label image. The first dimension is channel.
+
+    """
+    if num_labels is None:
+        num_labels = len(np.unique(label_image)) - 1 # without background 0
+    result = np.zeros((num_labels + 1, label_image.size), dtype=bool)
+    result[label_image.flatten(), np.arange(label_image.size)] = 1
+    result = result.reshape(-1, *label_image.shape)
+    return result
 
 class DataGenerator(keras.utils.Sequence):
 
@@ -422,10 +440,10 @@ class DataGenerator(keras.utils.Sequence):
                     #_img = np.array(_img).astype(np.float32)#[None, ...]
                     #one_hot = OneHotEncoder() 
                     #_img =  np.stack([tmp==i for i in range(1, 5)], axis=0).astype(np.float32)
-                    _img = tf.one_hot(tmp, 4)
-                    _img = tf.transpose(_img, perm=[3, 0, 1, 2])
+                    _img = onehot(tmp, 4)
+                    #_img = tf.transpose(_img, perm=[3, 0, 1, 2])
                     #print(_img.shape)
-                    y.append(_img)
+                    y.append(_img.astype(np.float32))
                     # TODO: check this
                     #if self.binary:
                     #    #print('----------------------------'*10)

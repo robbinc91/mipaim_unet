@@ -6,11 +6,12 @@ import keras
 from common import *
 import json
 import os
-
+from keras_contrib.layers import InstanceNormalization
+from keras.models import load_model
 #from tensorflow.python.client import device_lib
 # print(device_lib.list_local_devices())
 # input()
-
+keras.backend.set_image_data_format('channels_first')
 if __name__ == '__main__':
 
     config = tf.compat.v1.ConfigProto(gpu_options=tf.compat.v1.GPUOptions(allow_growth=True))
@@ -18,29 +19,34 @@ if __name__ == '__main__':
     tf.compat.v1.enable_eager_execution()
 
     LABELS = json.load(open('labels_c5_bp_cs.json'))['labels']
-    output_folder = 'weights/mipaim_unet/20221022/'
+    output_folder = 'weights/mipaim_unet/20221023_3/'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
     # 400 epochs per label
-    EPOCHS = 400
+    EPOCHS = 20
 
     _label = 'bp_cs'
 
     __output_folder = '{0}{1}/'.format(output_folder, _label)
     if not os.path.exists(__output_folder):
         os.makedirs(__output_folder)
-    model_ = mipaim_unet(
-        shape=REDUCED_MNI_SHAPE_MINE,
-        only_3x3_filters=ONLY_3X3_FILTERS,
-        dropout=0.3,
-        filters_dim=[2, 2, 2, 4, 4],
-        instance_normalization=True,
-        num_labels=4)
-    model_.compile(optimizer='adam',
-                   loss=soft_dice_loss,
-                   metrics=[soft_dice_score])
-    #model_.summary()
+    if False:#os.path.exists(__output_folder+'model-{0}.h5'.format(_label)):
+      print('reloading trained model')
+      model_ = load_model(__output_folder+'model-{0}.h5'.format(_label),
+                           custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization})
+    else:
+      model_ = mipaim_unet(
+          shape=REDUCED_MNI_SHAPE_MINE,
+          only_3x3_filters=ONLY_3X3_FILTERS,
+          dropout=0.3,
+          filters_dim=[8, 8, 8, 8, 8],
+          instance_normalization=True,
+          num_labels=5)
+      model_.compile(optimizer='adam',
+                    loss=soft_dice_loss,
+                    metrics=[soft_dice_score])
+    model_.summary()
 
     partition, outputs = create_cersegsys_partitions(
         label=_label, use_augmentation=True, second_lbl='-clahe')
@@ -81,10 +87,10 @@ if __name__ == '__main__':
     )
 
     callbacks = [
-        model_checkpoint_callback,
+        #model_checkpoint_callback,
         # early_stop_callback,
         tensorboard_callback,
-        learning_rate_callback
+        #learning_rate_callback
     ]
 
     print('start fitting on {0}'.format(_label))
@@ -95,8 +101,10 @@ if __name__ == '__main__':
                validation_data=val_generator,
                epochs=EPOCHS,
                use_multiprocessing=False,
-               callbacks=callbacks)
-    # history = model_.fit_generator(generator=train_generator,
+               callbacks=callbacks,
+               #initial_epoch=5
+               )
+    #history = model_.fit_generator(generator=train_generator,
     #                               validation_data=val_generator,
     #                               epochs=EPOCHS,
     #                               use_multiprocessing=False,
