@@ -3,6 +3,7 @@ import keras.backend as K
 import numpy as np
 from functools import partial
 
+
 def categorical_crossentropy_3d(y_true, y_pred):
     """
     Computes categorical cross-entropy loss for a softmax distribution in a 3D array
@@ -24,7 +25,8 @@ def categorical_crossentropy_3d(y_true, y_pred):
     y_pred_flatten = K.flatten(y_pred)
     y_pred_flatten_log = -K.log(y_pred_flatten + K.epsilon())
     num_total_elements = K.sum(y_true_flatten)
-    cross_entropy = tf.reduce_sum(tf.multiply(y_true_flatten, y_pred_flatten_log))
+    cross_entropy = tf.reduce_sum(
+        tf.multiply(y_true_flatten, y_pred_flatten_log))
     mean_cross_entropy = cross_entropy / (num_total_elements + K.epsilon())
     return mean_cross_entropy
 
@@ -35,14 +37,13 @@ def dice_loss_multilabel(y_true, y_pred):
 
 def dice_coefficient_multilabel(y_true, y_pred, smooth=.1):
     dice = 0.
-    
+
     for i in range(y_pred.shape[1]):
-        dice += dice_coefficient(y_true[:,i,:,:,:], y_pred[:,i,:,:,:])
-    
+        dice += dice_coefficient(y_true[:, i, :, :, :], y_pred[:, i, :, :, :])
+
     dice /= y_pred.shape[1]
 
     return dice
-
 
 
 def dice_coefficient(y_true, y_pred, smooth=.1):
@@ -52,18 +53,19 @@ def dice_coefficient(y_true, y_pred, smooth=.1):
     ref: https://arxiv.org/pdf/1606.04797v1.pdf
     """
 
-    
     y_true = K.flatten(y_true)
     y_pred = K.flatten(y_pred)
     intersection = K.sum(K.abs(y_true * y_pred))
     return (2. * intersection) / (K.sum(K.square(y_true)) + K.sum(K.square(y_pred)) + smooth)
 
+
 def dice_loss(y_true, y_pred):
     return 1-dice_coefficient(y_true, y_pred)
 
+
 def soft_dice_score(image1, image2, axis=(-3, -2, -1), eps=0.001):
     """Calculate average Dice across channels
-    
+
     Args:
         image1, image2 (Tensor): The images to calculate Dice
         axis (tuple of int or int): The axes that the function sums across
@@ -75,7 +77,8 @@ def soft_dice_score(image1, image2, axis=(-3, -2, -1), eps=0.001):
     """
     #image2 = stable_one_hot(image2)
     intersection = K.sum(K.abs(image1 * image2), axis=axis)
-    dices =  (2. * intersection + eps) / (K.sum(K.square(image1),axis) + K.sum(K.square(image2),axis) + eps)
+    dices = (2. * intersection + eps) / (K.sum(K.square(image1),
+                                               axis) + K.sum(K.square(image2), axis) + eps)
     dice = K.mean(dices)
     return dice
     #intersection = K.sum(image1 * image2, axis=axis)
@@ -83,13 +86,14 @@ def soft_dice_score(image1, image2, axis=(-3, -2, -1), eps=0.001):
     #sum2 = K.sum(image2, axis=axis)
     #dices = 2 * (intersection + eps) / (sum1 + sum2 + eps)
     #dice = K.mean(dices)
-    #return dice
+    # return dice
+
 
 def stable_one_hot(vec):
     """
     Args:
         vec: tf.Tensor, a batch of logits to be encoded
-    
+
     Returns:
         tf.Tensor, a batch of numerically stable one-hot encoded logits
     """
@@ -99,10 +103,11 @@ def stable_one_hot(vec):
     vec -= 1e9 * mask
     return tf.nn.softmax(vec, axis=1)
 
+
 def soft_dice_loss(y_true, y_pred):
-    
-    #print(y_true)
-    #print(y_pred)
+
+    # print(y_true)
+    # print(y_pred)
     return 1-soft_dice_score(y_true, y_pred)
 
 
@@ -139,6 +144,7 @@ def jaccard_score(y_true, y_pred, smooth=100):
     sum_ = K.sum(K.abs(y_true) + K.abs(y_pred))
     jac = (intersection + smooth) / (sum_ - intersection + smooth)
     return jac
+
 
 def jaccard_distance(y_true, y_pred):
     return 1 - jaccard_score(y_true, y_pred)

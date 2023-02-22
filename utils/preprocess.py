@@ -74,7 +74,8 @@ def n4_bias_field_correction(input_image, outputImage=None,
         numberFittingLevels = number_of_fitting_levels
 
     if numberOfIterations is not None:
-        corrector.SetMaximumNumberOfIterations([numberOfIterations] * numberFittingLevels)
+        corrector.SetMaximumNumberOfIterations(
+            [numberOfIterations] * numberFittingLevels)
 
     corrected_image = corrector.Execute(image, maskImage)
 
@@ -135,11 +136,11 @@ def exhautive_registration(fixedImageFilter, movingImageFile):
 
     return transform, resampled
 
+
 def applyTransform(fixed_path, img_path, transform_path):
     moving = sitk.ReadImage(img_path, sitk.sitkFloat32)
     fixed = sitk.ReadImage(fixed_path, sitk.sitkFloat32)
     trf = sitk.ReadTransform(transform_path)
-
 
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(fixed)
@@ -163,5 +164,5 @@ def crop3d(image, bbox):
 
 def uncrop3d(image, source_shape, source_bbox):
     uncropped = np.zeros(source_shape, dtype=image.dtype)
-    uncropped[tuple(source_bbox)] = image[:,:,:]
+    uncropped[tuple(source_bbox)] = image[:, :, :]
     return uncropped

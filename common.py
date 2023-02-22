@@ -42,7 +42,5 @@ labels = {
 
 label = labels[LABEL]
 
-
 OPTIMIZER = 'adam'
 IMAGE_ORDERING = 'channels_first'
-

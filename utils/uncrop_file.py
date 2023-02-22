@@ -20,8 +20,9 @@ def uncrop_file(input_path, source_shape, source_bbox, output_path):
     _image = nib.load(input_path)
     image = _image.get_data()
     uncropped = np.zeros(source_shape, dtype=image.dtype)
-    uncropped[tuple(source_bbox)] = image[:,:,:]
-    uncropped_nifti = nib.Nifti1Image(uncropped, affine=_image.affine, header=_image.header)
+    uncropped[tuple(source_bbox)] = image[:, :, :]
+    uncropped_nifti = nib.Nifti1Image(
+        uncropped, affine=_image.affine, header=_image.header)
     nib.save(uncropped_nifti, output_path)
 
 

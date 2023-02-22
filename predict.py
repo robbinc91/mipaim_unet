@@ -21,14 +21,16 @@ def run_predict(input_path, output_path, _model):
     model_load = '/opt/models/cerebellum_full.h5'
     if _model is not None and _model != 'default':
         model_load = _model
-    model = load_model(model_load, custom_objects={'dice_coefficient': dice_coefficient, 'dice_loss': dice_loss})
+    model = load_model(model_load, custom_objects={
+                       'dice_coefficient': dice_coefficient, 'dice_loss': dice_loss})
 
     _input = histeq(to_uint8(get_data(input_path)))[None, None, ...]
     _output = model.predict(_input)
     _output = _output.squeeze()
 
     _img = nibabel.load(input_path)
-    output_img = nibabel.Nifti1Image(_output, affine=_img.affine, header=_img.header)
+    output_img = nibabel.Nifti1Image(
+        _output, affine=_img.affine, header=_img.header)
     nibabel.save(output_img, output_path)
 
 

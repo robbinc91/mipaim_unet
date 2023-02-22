@@ -28,6 +28,7 @@ def evaluate(label='cerebellum'):
     eval = model.evaluate(x=X, y=y)
     print(eval)
 
+
 def evaluate_unet(label='cerebellum'):
     t1, outputs = hammers_2017_data_evaluation_reduced(HAMMERS_ROOT, label)
     model = load_model('weights/unet_3d/model_' + str(label) + '.h5',
@@ -51,10 +52,11 @@ def evaluate_unet(label='cerebellum'):
     eval = model.evaluate(x=X, y=y)
     print(eval)
 
+
 if __name__ == '__main__':
     print('evaluating on cerebellum')
-    #evaluate('cerebellum')
+    # evaluate('cerebellum')
     evaluate_unet('cerebellum')
     evaluate_unet('brainstem')
     #print('evaluating on brainstem')
-    #evaluate('brainstem')
+    # evaluate('brainstem')

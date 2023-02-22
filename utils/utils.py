@@ -21,11 +21,11 @@ dev_prt_augm = [i for i in range(250, 331)]
 #cersegsys_dev_prt = [34, 39, 41]
 #cersegsys_test_prt = [35, 40, 43, 44]
 
-cersegsys_test_prt = [32, 34, 35, 37, 38, 40, 43, 48, 53, 55, 60, 62, 66, 65, 70]
+cersegsys_test_prt = [32, 34, 35, 37, 38,
+                      40, 43, 48, 53, 55, 60, 62, 66, 65, 70]
 cersegsys_dev_prt = [34, 35, 36, 41, 54]
-cersegsys_train_prt = [i for i in range(31, 71) if i not in cersegsys_test_prt and i not in cersegsys_dev_prt]
-
-
+cersegsys_train_prt = [i for i in range(
+    31, 71) if i not in cersegsys_test_prt and i not in cersegsys_dev_prt]
 
 
 #cersegsys_train_prt_augm = [i for i in range(1, 71)]
@@ -97,23 +97,33 @@ def mrbrains2018_data_train(root='./', t1=True, flair=False, ir=False):
 
     return T1path, segpath
 
+
 def hammers_2017_data_train(root):
-    T1Path = [root + 'pre/' + 'a{:02d}-reg-res.nii.gz'.format(i) for i in range(1, 25)]
-    segpath = [root + 'pre/' + 'a{:02d}-reg-seg-res.nii.gz'.format(i) for i in range(1, 25)]
+    T1Path = [root + 'pre/' +
+              'a{:02d}-reg-res.nii.gz'.format(i) for i in range(1, 25)]
+    segpath = [root + 'pre/' +
+               'a{:02d}-reg-seg-res.nii.gz'.format(i) for i in range(1, 25)]
 
     return T1Path, segpath
+
 
 def hammers_2017_data_preprocessed_train(root):
-    T1Path = [root + 'final/' + 'a{:02d}-pre.nii.gz'.format(i) for i in range(1, 25)]
-    segpath = [root + 'final/' + 'a{:02d}-cerebellum.nii.gz'.format(i) for i in range(1, 25)]
+    T1Path = [root + 'final/' +
+              'a{:02d}-pre.nii.gz'.format(i) for i in range(1, 25)]
+    segpath = [root + 'final/' +
+               'a{:02d}-cerebellum.nii.gz'.format(i) for i in range(1, 25)]
 
     return T1Path, segpath
+
 
 def hammers_2017_data_preprocessed_train_reduced(root, label='cerebellum'):
-    T1Path = [root + 'reduced/' + 'a{:02d}-pre.nii.gz'.format(i) for i in range(1, 25)]
-    segpath = [root + 'reduced/' + 'a{:02d}-{}.nii.gz'.format(i, label) for i in range(1, 25)]
+    T1Path = [root + 'reduced/' +
+              'a{:02d}-pre.nii.gz'.format(i) for i in range(1, 25)]
+    segpath = [root + 'reduced/' +
+               'a{:02d}-{}.nii.gz'.format(i, label) for i in range(1, 25)]
 
     return T1Path, segpath
+
 
 def mrbrains2018_data_val(root="./", t1=True, flair=False, ir=False):
 
@@ -124,24 +134,31 @@ def mrbrains2018_data_val(root="./", t1=True, flair=False, ir=False):
 
 
 def hammers_2017_data_val(root):
-    T1_val = [root + 'pre/' + 'a{:02d}-reg-res.nii.gz'.format(i) for i in range(19, 25)]
-    segm_val = [root + 'pre/' + 'a{:02d}-reg-seg-res.nii.gz'.format(i) for i in range(19, 25)]
+    T1_val = [root + 'pre/' +
+              'a{:02d}-reg-res.nii.gz'.format(i) for i in range(19, 25)]
+    segm_val = [root + 'pre/' +
+                'a{:02d}-reg-seg-res.nii.gz'.format(i) for i in range(19, 25)]
 
     return T1_val, segm_val
 
 
 def hammers_2017_data_evaluation(root):
-    T1_val = [root + 'pre/' + 'a{:02d}-reg-res.nii.gz'.format(i) for i in range(25, 31)]
-    segm_eval = [root + 'pre/' + 'a{:02d}-reg-seg-res.nii.gz'.format(i) for i in range(25, 31)]
+    T1_val = [root + 'pre/' +
+              'a{:02d}-reg-res.nii.gz'.format(i) for i in range(25, 31)]
+    segm_eval = [root + 'pre/' +
+                 'a{:02d}-reg-seg-res.nii.gz'.format(i) for i in range(25, 31)]
 
     return T1_val, segm_eval
 
 
 def hammers_2017_data_evaluation_reduced(root, label='cerebellum'):
-    T1_val = [root + 'reduced/' + 'a{:02d}-pre.nii.gz'.format(i) for i in range(25, 31)]
-    segm_eval = [root + 'reduced/' + 'a{:02d}-{}.nii.gz'.format(i, label) for i in range(25, 31)]
+    T1_val = [root + 'reduced/' +
+              'a{:02d}-pre.nii.gz'.format(i) for i in range(25, 31)]
+    segm_eval = [root + 'reduced/' +
+                 'a{:02d}-{}.nii.gz'.format(i, label) for i in range(25, 31)]
 
     return T1_val, segm_eval
+
 
 def data_train(root="./"):
     """
@@ -238,78 +255,85 @@ def hammers_outputs_generator(ii, jj, label):
         'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in range(ii, jj)
     }
 
+
 def hammers_partition_generator(rng, rnga=None):
     if rnga is None:
-      return ['a{:02d}-pre.nii.gz'.format(i) for i in rng]
+        return ['a{:02d}-pre.nii.gz'.format(i) for i in rng]
     return ['a{:02d}-pre.nii.gz'.format(i) for i in rng] + ['a{:03d}-pre.nii.gz'.format(i) for i in rnga]
+
 
 def _hammers_output_generator(rng, rnga=None, label='cerebellum'):
     if rnga is None:
-      return {
-          'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
-      }
-    
+        return {
+            'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+        }
+
     ret = {
-          'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
-      }
+        'a{:02d}-pre.nii.gz'.format(i): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+    }
     ret.update({
-          'a{:03d}-pre.nii.gz'.format(i): 'a{:03d}-{}.nii.gz'.format(i, label) for i in rnga
-      })
+        'a{:03d}-pre.nii.gz'.format(i): 'a{:03d}-{}.nii.gz'.format(i, label) for i in rnga
+    })
     return ret
 
 
 def create_hammers_partitions_new(label='cerebellum', use_augmentation=False):
     if use_augmentation is False:
         partition = {
-          'train': hammers_partition_generator(train_prt, None),
-          'validation': hammers_partition_generator(dev_prt, None)
+            'train': hammers_partition_generator(train_prt, None),
+            'validation': hammers_partition_generator(dev_prt, None)
         }
         outputs = _hammers_output_generator(train_prt + dev_prt, None, label)
     else:
         partition = {
-          'train': hammers_partition_generator(train_prt, train_prt_augm),
-          'validation': hammers_partition_generator(dev_prt, dev_prt_augm)
+            'train': hammers_partition_generator(train_prt, train_prt_augm),
+            'validation': hammers_partition_generator(dev_prt, dev_prt_augm)
         }
-        outputs = _hammers_output_generator(train_prt + dev_prt, train_prt_augm + dev_prt_augm, label)
+        outputs = _hammers_output_generator(
+            train_prt + dev_prt, train_prt_augm + dev_prt_augm, label)
 
     return partition, outputs
 
+
 def cersegsys_partition_generator(rng, rnga=None, second_lbl=''):
     if rnga is None:
-      return ['a{:02d}{}.nii.gz'.format(i, second_lbl) for i in rng]
+        return ['a{:02d}{}.nii.gz'.format(i, second_lbl) for i in rng]
     return ['a{:02d}{}.nii.gz'.format(i, second_lbl) for i in rng] + ['a{:03d}{}.nii.gz'.format(i, second_lbl) for i in rnga]
 
 
 def cersegsys_output_generator(rng, rnga=None, label='cerebellum', second_lbl=''):
     if rnga is None:
-      return {
-          'a{:02d}{}.nii.gz'.format(i, second_lbl): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
-      }
-    
+        return {
+            'a{:02d}{}.nii.gz'.format(i, second_lbl): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+        }
+
     ret = {
-          'a{:02d}{}.nii.gz'.format(i, second_lbl): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
-      }
+        'a{:02d}{}.nii.gz'.format(i, second_lbl): 'a{:02d}-{}.nii.gz'.format(i, label) for i in rng
+    }
     ret.update({
-          'a{:03d}{}.nii.gz'.format(i, second_lbl): 'a{:03d}-{}.nii.gz'.format(i, label) for i in rnga
-      })
+        'a{:03d}{}.nii.gz'.format(i, second_lbl): 'a{:03d}-{}.nii.gz'.format(i, label) for i in rnga
+    })
     return ret
 
 
 def create_cersegsys_partitions(label='cerebellum', use_augmentation=False, second_lbl=''):
     if use_augmentation is False:
         partition = {
-          'train': cersegsys_partition_generator(cersegsys_train_prt, None, second_lbl),
-          'validation': cersegsys_partition_generator(cersegsys_dev_prt, None, second_lbl)
+            'train': cersegsys_partition_generator(cersegsys_train_prt, None, second_lbl),
+            'validation': cersegsys_partition_generator(cersegsys_dev_prt, None, second_lbl)
         }
-        outputs = cersegsys_output_generator(cersegsys_train_prt + cersegsys_dev_prt, None, label, second_lbl)
+        outputs = cersegsys_output_generator(
+            cersegsys_train_prt + cersegsys_dev_prt, None, label, second_lbl)
     else:
         partition = {
-          'train': cersegsys_partition_generator(cersegsys_train_prt, cersegsys_train_prt_augm, second_lbl),
-          'validation': cersegsys_partition_generator(cersegsys_dev_prt, cersegsys_dev_prt_augm, second_lbl)
+            'train': cersegsys_partition_generator(cersegsys_train_prt, cersegsys_train_prt_augm, second_lbl),
+            'validation': cersegsys_partition_generator(cersegsys_dev_prt, cersegsys_dev_prt_augm, second_lbl)
         }
-        outputs = cersegsys_output_generator(cersegsys_train_prt + cersegsys_dev_prt, cersegsys_train_prt_augm + cersegsys_dev_prt_augm, label, second_lbl)
+        outputs = cersegsys_output_generator(
+            cersegsys_train_prt + cersegsys_dev_prt, cersegsys_train_prt_augm + cersegsys_dev_prt_augm, label, second_lbl)
 
     return partition, outputs
+
 
 def create_hammers_partitions(label='cerebellum'):
     partition = {
@@ -320,6 +344,7 @@ def create_hammers_partitions(label='cerebellum'):
     outputs = hammers_outputs_generator(1, 25, label)
 
     return partition, outputs
+
 
 def onehot(label_image, num_labels=None):
     """Performs one-hot encoding.
@@ -334,11 +359,12 @@ def onehot(label_image, num_labels=None):
 
     """
     if num_labels is None:
-        num_labels = len(np.unique(label_image)) - 1 # without background 0
+        num_labels = len(np.unique(label_image)) - 1  # without background 0
     result = np.zeros((num_labels + 1, label_image.size), dtype=bool)
     result[label_image.flatten(), np.arange(label_image.size)] = 1
     result = result.reshape(-1, *label_image.shape)
     return result
+
 
 class DataGenerator(keras.utils.Sequence):
 
@@ -389,7 +415,8 @@ class DataGenerator(keras.utils.Sequence):
 
     def __getitem__(self, index):
 
-        indexes = self.indexes[index * self.batch_size: (index + 1) * self.batch_size]
+        indexes = self.indexes[index *
+                               self.batch_size: (index + 1) * self.batch_size]
 
         list_ids_temp = [self.list_ids[k] for k in indexes]
 
@@ -414,42 +441,47 @@ class DataGenerator(keras.utils.Sequence):
                 if (self.labels is not None) and (self.binary is True):
                     # binary parcellation
                     yLabels = list()
-                    _data = get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)
+                    _data = get_data(self.root + self.in_folder +
+                                     '/' + self.outputs[ID]).round().astype(int)
                     for label_num in self.labels:
-                        #if label_num == 12:
+                        # if label_num == 12:
                         #    continue
                         #yLabels.append(np.array(_data == label_num).astype(int)[None, ...])
-                        yLabels.append(np.array(_data == label_num).astype(int))
+                        yLabels.append(
+                            np.array(_data == label_num).astype(int))
                         #yLabels.append(to_uint8(np.array(_data == label_num))[None, ...])
                         #yLabels.append(to_uint8(np.array(_data == label_num)))
-                    
+
                     y.append(yLabels)
-                    #y.append(_data)
+                    # y.append(_data)
 
                 elif self.filter_label is not None:
                     # binary parcellation, filtering by label. too slow
-                    _data = get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)
-                    y.append(to_uint8(np.array(_data == self.filter_label))[None, ...])
+                    _data = get_data(self.root + self.in_folder +
+                                     '/' + self.outputs[ID]).round().astype(int)
+                    y.append(
+                        to_uint8(np.array(_data == self.filter_label))[None, ...])
                 else:
                     # segmentation, or non binary parcellation
-                    tmp = get_data(self.root + self.in_folder + '/' + self.outputs[ID])#[None, ...]
+                    tmp = get_data(self.root + self.in_folder +
+                                   '/' + self.outputs[ID])  # [None, ...]
                     #_img = []
-                    #for i in range(1, 5):
+                    # for i in range(1, 5):
                     #    _img.append(tmp == i)
-                    
-                    #_img = np.array(_img).astype(np.float32)#[None, ...]
-                    #one_hot = OneHotEncoder() 
+
+                    # _img = np.array(_img).astype(np.float32)#[None, ...]
+                    #one_hot = OneHotEncoder()
                     #_img =  np.stack([tmp==i for i in range(1, 5)], axis=0).astype(np.float32)
                     _img = onehot(tmp, 4)
                     #_img = tf.transpose(_img, perm=[3, 0, 1, 2])
-                    #print(_img.shape)
+                    # print(_img.shape)
                     y.append(_img.astype(np.float32))
                     # TODO: check this
-                    #if self.binary:
+                    # if self.binary:
                     #    #print('----------------------------'*10)
                     #    #y.append(to_uint8(get_data(self.root + self.in_folder + '/' + self.outputs[ID])))
                     #    y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]))
-                    #else:
+                    # else:
                     #    y.append(get_data(self.root + self.in_folder + '/' + self.outputs[ID]).round().astype(int)[None, ...])
             else:
                 # it's a classification task
@@ -461,12 +493,11 @@ class DataGenerator(keras.utils.Sequence):
         if not self.is_segmentation:
             y = to_categorical(y, num_classes=3)
             #y = np.array(y)
-            #pass
+            # pass
         else:
             y = np.array(y)
 
         return X, y
-
 
 
 def step_decay(epoch, lr):
@@ -475,5 +506,3 @@ def step_decay(epoch, lr):
     epochs_drop = 10
     lrate = lr * math.pow(drop, math.floor((1 + epoch) / epochs_drop))
     return lrate
-
-

@@ -7,14 +7,12 @@ def output_mapper(_input, num_labels=1, activation='relu', IMAGE_ORDERING='chann
     Conv = Conv3D if len(_input.shape) == 5 else Conv2D
 
     _output = Conv(filters=num_labels,
-                  kernel_size=1,
-                  activation=activation,
-                  strides=1,
-                  padding='same',
-                  data_format=IMAGE_ORDERING)(_input)
+                   kernel_size=1,
+                   activation=activation,
+                   strides=1,
+                   padding='same',
+                   data_format=IMAGE_ORDERING)(_input)
 
     _output = Softmax(axis=1)(_output)
 
     return _output
-
-
