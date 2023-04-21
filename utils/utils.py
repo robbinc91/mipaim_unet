@@ -21,19 +21,18 @@ dev_prt_augm = [i for i in range(250, 331)]
 #cersegsys_dev_prt = [34, 39, 41]
 #cersegsys_test_prt = [35, 40, 43, 44]
 
-cersegsys_test_prt = [32, 34, 35, 37, 38,
-                      40, 43, 48, 53, 55, 60, 62, 66, 65, 70]
-cersegsys_dev_prt = [34, 35, 36, 41, 54]
-cersegsys_train_prt = [i for i in range(
-    31, 71) if i not in cersegsys_test_prt and i not in cersegsys_dev_prt]
+cersegsys_train_prt = [31, 32, 36, 37, 38, 39, 43, 44, 45, 46, 47, 50, 52, 54, 61, 62, 65]
+cersegsys_dev_prt = [33, 66, 70]
+cersegsys_test_prt = [i for i in range(
+    31, 73) if i not in cersegsys_train_prt and i not in cersegsys_dev_prt]
 
 
 #cersegsys_train_prt_augm = [i for i in range(1, 71)]
 #cersegsys_dev_prt_augm = [i for i in range(71, 101)]
 
 
-cersegsys_train_prt_augm = [i for i in range(1, 401)]  # Added new images
-cersegsys_dev_prt_augm = [i for i in range(401, 501)]
+cersegsys_train_prt_augm = [i for i in range(1, 601)]  # Added new images
+cersegsys_dev_prt_augm = [i for i in range(601, 760)]
 
 
 def visualize(PATH, View="Axial_View", cmap=None):
@@ -316,21 +315,29 @@ def cersegsys_output_generator(rng, rnga=None, label='cerebellum', second_lbl=''
     return ret
 
 
-def create_cersegsys_partitions(label='cerebellum', use_augmentation=False, second_lbl=''):
-    if use_augmentation is False:
+def create_cersegsys_partitions(label='cerebellum', use_augmentation=False, second_lbl='', use_originals=True):
+    if use_originals:
+        if use_augmentation is False:
+            partition = {
+                'train': cersegsys_partition_generator(cersegsys_train_prt, None, second_lbl),
+                'validation': cersegsys_partition_generator(cersegsys_dev_prt, None, second_lbl)
+            }
+            outputs = cersegsys_output_generator(
+                cersegsys_train_prt + cersegsys_dev_prt, None, label, second_lbl)
+        else:
+            partition = {
+                'train': cersegsys_partition_generator(cersegsys_train_prt, cersegsys_train_prt_augm, second_lbl),
+                'validation': cersegsys_partition_generator(cersegsys_dev_prt, cersegsys_dev_prt_augm, second_lbl)
+            }
+            outputs = cersegsys_output_generator(
+                cersegsys_train_prt + cersegsys_dev_prt, cersegsys_train_prt_augm + cersegsys_dev_prt_augm, label, second_lbl)
+    else if use_augmentation:
         partition = {
-            'train': cersegsys_partition_generator(cersegsys_train_prt, None, second_lbl),
-            'validation': cersegsys_partition_generator(cersegsys_dev_prt, None, second_lbl)
+            'train': cersegsys_partition_generator([], cersegsys_train_prt_augm, second_lbl),
+            'validation': cersegsys_partition_generator([], cersegsys_dev_prt_augm, second_lbl)
         }
         outputs = cersegsys_output_generator(
-            cersegsys_train_prt + cersegsys_dev_prt, None, label, second_lbl)
-    else:
-        partition = {
-            'train': cersegsys_partition_generator(cersegsys_train_prt, cersegsys_train_prt_augm, second_lbl),
-            'validation': cersegsys_partition_generator(cersegsys_dev_prt, cersegsys_dev_prt_augm, second_lbl)
-        }
-        outputs = cersegsys_output_generator(
-            cersegsys_train_prt + cersegsys_dev_prt, cersegsys_train_prt_augm + cersegsys_dev_prt_augm, label, second_lbl)
+            [], cersegsys_train_prt_augm + cersegsys_dev_prt_augm, label, second_lbl)
 
     return partition, outputs
 

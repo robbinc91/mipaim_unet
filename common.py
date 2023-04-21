@@ -13,6 +13,7 @@ CERSEGSYS_2_ROOT = './datasets/cersegsys_2/'
 CERSEGSYS_3_ROOT = './datasets/cersegsys_3/'
 CERSEGSYS_4_ROOT = './datasets/cersegsys_4/'
 CERSEGSYS_5_ROOT = './datasets/cersegsys_5/'
+CERSEGSYS_7_ROOT = './datasets/cersegsys_7/'
 
 ONLY_3X3_FILTERS = True
 MNI_SHAPE = (1, 192, 224, 192)
@@ -22,6 +23,8 @@ z_idx_range = slice(10, 90)
 REDUCED_MNI_SHAPE = (1, 128, 112, 80)
 REDUCED_MNI_SHAPE_MINE = (1, 128, 128, 96)
 REDUCED_MNI_SHAPE_CERSEGSYS_PARCELLATION = (1, 128, 80, 80)
+
+CERSEGSYS_7_SHAPE=(160, 128, 96)
 
 MRBRAINS_SHAPE = (1, 240, 240, 48)
 

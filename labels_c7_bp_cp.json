@@ -1,0 +1,15 @@
+{    
+    "labels": {
+        "Background":             				 0,
+        "Medulla oblongata":      				 1, 
+        "Olive":                  				 2, 
+        "Midbrain":               				 3, 
+        "Right cerebellum exterior":             4,
+		"Left cerebellum exterior":				 5,
+		"Cerebellum lobules I-V":				 6,
+		"Cerebellum lobules VI-VII":			 7,
+		"Cerebellum lobules VIII-X":			 8,
+		"Right cerebellum white matter":		 9,
+		"Left cerebellum white matter":			 10
+    }
+}
