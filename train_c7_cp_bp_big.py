@@ -89,7 +89,7 @@ if __name__ == '__main__':
     learning_rate_callback = keras.callbacks.LearningRateScheduler(lr_schedule)
 
     tensorboard_callback = keras.callbacks.TensorBoard(
-        log_dir='logs/c7_bp_cp'
+        log_dir='logs/c7_bp_cp_big'
     )
 
     callbacks = [
