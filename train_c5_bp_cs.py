@@ -19,34 +19,41 @@ if __name__ == '__main__':
     tf.compat.v1.enable_eager_execution()
 
     LABELS = json.load(open('labels_c5_bp_cs.json'))['labels']
-    output_folder = 'weights/mipaim_unet/20221023_3/'
+    output_folder = 'weights/mipaim_unet/6/'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
     # 400 epochs per label
-    EPOCHS = 20
+    EPOCHS = 200
 
     _label = 'bp_cs'
 
     __output_folder = '{0}{1}/'.format(output_folder, _label)
     if not os.path.exists(__output_folder):
         os.makedirs(__output_folder)
-    if False:#os.path.exists(__output_folder+'model-{0}.h5'.format(_label)):
+
+    custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization}
+    
+    model_ = mipaim_unet(
+        shape=REDUCED_MNI_SHAPE_MINE,
+        only_3x3_filters=ONLY_3X3_FILTERS,
+        dropout=0.3,
+        filters_dim=[8, 8, 8, 8, 8],
+        instance_normalization=True,
+        num_labels=5)
+    model_.compile(optimizer='adam',
+                  loss=soft_dice_loss,
+                  metrics=[soft_dice_score])
+    start_epoch=1
+
+    if os.path.exists(__output_folder+'model-80.h5'):
       print('reloading trained model')
-      model_ = load_model(__output_folder+'model-{0}.h5'.format(_label),
-                           custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization})
-    else:
-      model_ = mipaim_unet(
-          shape=REDUCED_MNI_SHAPE_MINE,
-          only_3x3_filters=ONLY_3X3_FILTERS,
-          dropout=0.3,
-          filters_dim=[8, 8, 8, 8, 8],
-          instance_normalization=True,
-          num_labels=5)
-      model_.compile(optimizer='adam',
-                    loss=soft_dice_loss,
-                    metrics=[soft_dice_score])
+      model_.set_weights(load_model(__output_folder+'model-80.h5', custom_objects).get_weights())
+      start_epoch=81
     model_.summary()
+    #for layer_ in model_.layers:
+    #  if 'conv' in layer_.name:
+    #    print(layer_.kernel_initializer.distribution, layer_.kernel_initializer.scale, layer_.kernel_initializer.mode)
 
     partition, outputs = create_cersegsys_partitions(
         label=_label, use_augmentation=True, second_lbl='-clahe')
@@ -77,7 +84,7 @@ if __name__ == '__main__':
         save_best_only=False,
         save_weights_only=False,
         mode='max',
-        #save_freq=20
+        #save_freq=10
     )
 
     learning_rate_callback = keras.callbacks.LearningRateScheduler(lr_schedule)
@@ -87,10 +94,10 @@ if __name__ == '__main__':
     )
 
     callbacks = [
-        #model_checkpoint_callback,
+        model_checkpoint_callback,
         # early_stop_callback,
         tensorboard_callback,
-        #learning_rate_callback
+        learning_rate_callback
     ]
 
     print('start fitting on {0}'.format(_label))
@@ -102,7 +109,7 @@ if __name__ == '__main__':
                epochs=EPOCHS,
                use_multiprocessing=False,
                callbacks=callbacks,
-               #initial_epoch=5
+               initial_epoch=start_epoch
                )
     #history = model_.fit_generator(generator=train_generator,
     #                               validation_data=val_generator,

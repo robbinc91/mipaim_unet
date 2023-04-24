@@ -9,6 +9,7 @@ import os
 from keras_contrib.layers import InstanceNormalization
 from keras.models import load_model
 import tensorflow.keras
+from pathlib import Path
 #from tensorflow.python.client import device_lib
 # print(device_lib.list_local_devices())
 # input()
@@ -26,17 +27,43 @@ if __name__ == '__main__':
         os.makedirs(output_folder)
 
     # 400 epochs per label
-    EPOCHS = 1000
+    EPOCHS = 300
+    start_epoch = 0
+    retrain = False
 
-    _label = 'brainstem_cerebellum_cropped_160x128x96'
+    _label = 'seg'
 
     __output_folder = '{0}{1}/'.format(output_folder, _label)
     if not os.path.exists(__output_folder):
         os.makedirs(__output_folder)
-    if False:#os.path.exists(__output_folder+'model-{0}.h5'.format(_label)):
-      print('reloading trained model')
-      model_ = load_model(__output_folder+'model-{0}.h5'.format(_label),
+    
+    paths = sorted(Path(__output_folder).iterdir(), key=os.path.getmtime)
+
+    #if False:#os.path.exists(__output_folder+'model-{0}.h5'.format(_label)):
+    #  print('reloading trained model')
+    #  model_ = load_model(__output_folder+'model-{0}.h5'.format(_label),
+    #                       custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization})
+    if len(paths) > 0:
+        last_file = str(paths[-1]).split(os.sep)[-1]
+        if last_file == 'model-{0}.h5'.format(_label):
+           if not retrain:
+              print('model train has already finished')
+              import sys
+              sys.exit(0)
+           else:
+              print('restart full')
+              model_ = load_model(__output_folder + 'model-{0}.h5'.format(_label),
                            custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization})
+              start_epoch = EPOCHS
+              EPOCHS *= 2
+              
+        else:
+           # parse name
+            start_epoch = int(last_file[12:15])
+            model_ = load_model(__output_folder + last_file,
+                           custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization})
+            last_score = last_file[last_file.find('val_dice_score='):-3][15:]
+            print(f'restart training from epoch {start_epoch} with val_dice_score {last_score}')
     else:
       model_ = mipaim_unet(
           shape=CERSEGSYS_7_SHAPE,
@@ -83,7 +110,7 @@ if __name__ == '__main__':
         save_best_only=False,
         save_weights_only=False,
         mode='max',
-        save_freq=20
+        #save_freq=20
     )
 
     learning_rate_callback = keras.callbacks.LearningRateScheduler(lr_schedule)
@@ -108,7 +135,7 @@ if __name__ == '__main__':
                epochs=EPOCHS,
                use_multiprocessing=False,
                callbacks=callbacks,
-               #initial_epoch=5
+               initial_epoch=start_epoch
                )
     #history = model_.fit_generator(generator=train_generator,
     #                               validation_data=val_generator,
