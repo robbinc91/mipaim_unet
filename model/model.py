@@ -79,19 +79,28 @@ def mipaim_unet(
         dropout=None,
         filters_dim=None,
         instance_normalization=False,
-        num_labels=28):
+        num_labels=28,
+        skip_connections_treatment_number=3,
+        skip_connections_method='attention',
+        kernel_initializer='glorot_uniform',
+        use_input_mask=False):
     # Medical Image Parcellation with Attention and Inception Modules
     # MIPAIM
     _input = Input(shape=shape)
+    if use_input_mask:
+        _input = [_input, Input(shape=shape)]
     _encoded_layers = encode_inception(
         _input,
         False,
         IMAGE_ORDERING=IMAGE_ORDERING,
         only_3x3_filters=only_3x3_filters,
         filters_dim=filters_dim,
-        skip_connections_treatment_number=3,
-        skip_connections_method='attention',
-        carry_input=False)
+        skip_connections_treatment_number=skip_connections_treatment_number,
+        skip_connections_method=skip_connections_method,
+        carry_input=False,
+        kernel_initializer=kernel_initializer,
+        instance_normalization=instance_normalization,
+        use_input_mask=use_input_mask)
 
     _output = decode_inception_v2(
         _encoded_layers,
@@ -100,13 +109,15 @@ def mipaim_unet(
         only_3x3_filters=only_3x3_filters,
         dropout=dropout,
         filters_dim=filters_dim,
-        instance_normalization=instance_normalization)
+        instance_normalization=instance_normalization,
+        kernel_initializer=kernel_initializer)
 
     _output = output_mapper(
         _output,
         num_labels,
         'relu',
-        IMAGE_ORDERING=IMAGE_ORDERING)
+        IMAGE_ORDERING=IMAGE_ORDERING,
+        instance_normalization=instance_normalization)
 
     return Model(_input, _output)
 

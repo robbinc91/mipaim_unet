@@ -16,3 +16,6 @@ preprocessing_utils/mni/template
 preprocessing_utils/fsl
 model/images
 images
+older_train_files
+app.py
+test.py

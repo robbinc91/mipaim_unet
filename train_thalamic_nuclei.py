@@ -8,75 +8,101 @@ import json
 import os
 from keras_contrib.layers import InstanceNormalization
 from keras.models import load_model
+import tensorflow.keras
+from pathlib import Path
 #from tensorflow.python.client import device_lib
 # print(device_lib.list_local_devices())
 # input()
 keras.backend.set_image_data_format('channels_first')
+
 if __name__ == '__main__':
 
     config = tf.compat.v1.ConfigProto(gpu_options=tf.compat.v1.GPUOptions(allow_growth=True))
     sess = tf.compat.v1.Session(config=config)
     tf.compat.v1.enable_eager_execution()
 
-    LABELS = json.load(open('labels_c5_bp_cs.json'))['labels']
-    output_folder = 'weights/mipaim_unet/6/'
+    #LABELS = json.load(open('labels_c7_bp_cp.json'))['labels']
+    output_folder = 'weights/mipaim_unet/20241006/'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    # 400 epochs per label
-    EPOCHS = 200
+    EPOCHS = 1000
+    start_epoch = 0
+    retrain = False
 
-    _label = 'bp_cs'
+    _label = 'seg'
 
     __output_folder = '{0}{1}/'.format(output_folder, _label)
     if not os.path.exists(__output_folder):
         os.makedirs(__output_folder)
-
-    custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization}
     
-    model_ = mipaim_unet(
-        shape=REDUCED_MNI_SHAPE_MINE,
-        only_3x3_filters=ONLY_3X3_FILTERS,
-        dropout=0.3,
-        filters_dim=[8, 8, 8, 8, 8],
-        instance_normalization=True,
-        num_labels=5)
+    paths = sorted(Path(__output_folder).iterdir(), key=os.path.getmtime)
+
+    #if False:#os.path.exists(__output_folder+'model-{0}.h5'.format(_label)):
+    #  print('reloading trained model')
+    #  model_ = load_model(__output_folder+'model-{0}.h5'.format(_label),
+    #                       custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization})
+    if len(paths) > 0:
+        last_file = str(paths[-1]).split(os.sep)[-1]
+        if last_file == 'model-{0}.h5'.format(_label):
+           if not retrain:
+              print('model train has already finished')
+              import sys
+              sys.exit(0)
+           else:
+              print('restart full')
+              model_ = load_model(__output_folder + 'model-{0}.h5'.format(_label),
+                           custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization})
+              start_epoch = EPOCHS
+              EPOCHS *= 2
+              
+        else:
+           # parse name
+            start_epoch = int(last_file[12:15])
+            model_ = load_model(__output_folder + last_file,
+                           custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization})
+            last_score = last_file[last_file.find('val_dice_score='):-3][15:]
+            print(f'restart training from epoch {start_epoch} with val_dice_score {last_score}')
+    else:
+      model_ = mipaim_unet(
+          shape=THALAMUS_LEFT_SHAPE,
+          only_3x3_filters=ONLY_3X3_FILTERS,
+          dropout=0.3,
+          filters_dim=[8,16,32,64,128],
+          instance_normalization=True,
+          num_labels=14,
+          skip_connections_treatment_number=0)
     model_.compile(optimizer='adam',
-                  loss=soft_dice_loss,
-                  metrics=[soft_dice_score])
-    start_epoch=1
-
-    if os.path.exists(__output_folder+'model-80.h5'):
-      print('reloading trained model')
-      model_.set_weights(load_model(__output_folder+'model-80.h5', custom_objects).get_weights())
-      start_epoch=81
+                    loss=soft_dice_loss,
+                    metrics=[soft_dice_score])
     model_.summary()
-    #for layer_ in model_.layers:
-    #  if 'conv' in layer_.name:
-    #    print(layer_.kernel_initializer.distribution, layer_.kernel_initializer.scale, layer_.kernel_initializer.mode)
 
-    partition, outputs = create_cersegsys_partitions(
-        label=_label, use_augmentation=True, second_lbl='-clahe')
+    partition, outputs = create_thalamic_partitions(
+        label=_label, 
+        use_augmentation=True, 
+        second_lbl='', 
+        use_originals=True 
+    )
     train_generator = DataGenerator(partition['train'],
                                     outputs,
                                     batch_size=1,
-                                    root=CERSEGSYS_5_ROOT,
+                                    root=THALAMUS_LEFT_ROOT,
                                     shuffle=True,
                                     histogram_equalization=False,
-                                    in_folder='08_augmentations',
+                                    in_folder='crop_48x64x64',
                                     is_segmentation=True,
                                     binary=False)
     val_generator = DataGenerator(partition['validation'],
                                   outputs,
                                   batch_size=1,
-                                  root=CERSEGSYS_5_ROOT,
+                                  root=THALAMUS_LEFT_ROOT,
                                   shuffle=True,
                                   histogram_equalization=False,
-                                  in_folder='08_augmentations',
+                                  in_folder='crop_48x64x64',
                                   is_segmentation=True,
                                   binary=False)
 
-    model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
+    model_checkpoint_callback = tensorflow.keras.callbacks.ModelCheckpoint(
         __output_folder +
         'model.epoch={epoch:03d}.val_dice_score={soft_dice_score:.5f}.h5',
         monitor='soft_dice_score',
@@ -84,13 +110,13 @@ if __name__ == '__main__':
         save_best_only=False,
         save_weights_only=False,
         mode='max',
-        #save_freq=10
+        #save_freq=20
     )
 
     learning_rate_callback = keras.callbacks.LearningRateScheduler(lr_schedule)
 
     tensorboard_callback = keras.callbacks.TensorBoard(
-        log_dir='logs/bp_cs'
+        log_dir='logs/thalamic_nuclei'
     )
 
     callbacks = [

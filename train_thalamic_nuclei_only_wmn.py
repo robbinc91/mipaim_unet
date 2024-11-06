@@ -14,19 +14,19 @@ from pathlib import Path
 # print(device_lib.list_local_devices())
 # input()
 keras.backend.set_image_data_format('channels_first')
+
 if __name__ == '__main__':
 
     config = tf.compat.v1.ConfigProto(gpu_options=tf.compat.v1.GPUOptions(allow_growth=True))
     sess = tf.compat.v1.Session(config=config)
     tf.compat.v1.enable_eager_execution()
 
-    LABELS = json.load(open('labels_c7_bp_cp.json'))['labels']
-    output_folder = 'weights/mipaim_unet/20230421/'
+    #LABELS = json.load(open('labels_c7_bp_cp.json'))['labels']
+    output_folder = 'weights/mipaim_unet/20241006_only_wmn/'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    # 400 epochs per label
-    EPOCHS = 400
+    EPOCHS = 1000
     start_epoch = 0
     retrain = False
 
@@ -35,12 +35,12 @@ if __name__ == '__main__':
     __output_folder = '{0}{1}/'.format(output_folder, _label)
     if not os.path.exists(__output_folder):
         os.makedirs(__output_folder)
-
+    
     paths = sorted(Path(__output_folder).iterdir(), key=os.path.getmtime)
 
-    #if os.path.exists(__output_folder+'partial_model.h5'):
+    #if False:#os.path.exists(__output_folder+'model-{0}.h5'.format(_label)):
     #  print('reloading trained model')
-    #  model_ = load_model(__output_folder+'partial_model.h5',
+    #  model_ = load_model(__output_folder+'model-{0}.h5'.format(_label),
     #                       custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization})
     if len(paths) > 0:
         last_file = str(paths[-1]).split(os.sep)[-1]
@@ -65,39 +65,41 @@ if __name__ == '__main__':
             print(f'restart training from epoch {start_epoch} with val_dice_score {last_score}')
     else:
       model_ = mipaim_unet(
-          shape=CERSEGSYS_7_SHAPE,
+          shape=THALAMUS_LEFT_SHAPE,
           only_3x3_filters=ONLY_3X3_FILTERS,
           dropout=0.3,
-          filters_dim=[8, 16, 32, 64, 128],
+          filters_dim=[8,16,32,64,128],
           instance_normalization=True,
-          num_labels=11)
+          num_labels=14,
+          skip_connections_treatment_number=0)
     model_.compile(optimizer='adam',
-                  loss=soft_dice_loss,
-                  metrics=[soft_dice_score])
+                    loss=soft_dice_loss,
+                    metrics=[soft_dice_score])
     model_.summary()
 
-    partition, outputs = create_cersegsys_partitions(
+    partition, outputs = create_thalamic_partitions(
         label=_label, 
         use_augmentation=True, 
         second_lbl='', 
-        use_originals=False # not using original images, as there is a big chance of having them among the augmented ones
+        use_originals=True,
+        label_append='-remap' 
     )
     train_generator = DataGenerator(partition['train'],
                                     outputs,
                                     batch_size=1,
-                                    root=CERSEGSYS_7_ROOT,
+                                    root=THALAMUS_LEFT_ROOT,
                                     shuffle=True,
                                     histogram_equalization=False,
-                                    in_folder='data',
+                                    in_folder='crop_48x64x64',
                                     is_segmentation=True,
                                     binary=False)
     val_generator = DataGenerator(partition['validation'],
                                   outputs,
                                   batch_size=1,
-                                  root=CERSEGSYS_7_ROOT,
+                                  root=THALAMUS_LEFT_ROOT,
                                   shuffle=True,
                                   histogram_equalization=False,
-                                  in_folder='data',
+                                  in_folder='crop_48x64x64',
                                   is_segmentation=True,
                                   binary=False)
 
@@ -115,14 +117,14 @@ if __name__ == '__main__':
     learning_rate_callback = keras.callbacks.LearningRateScheduler(lr_schedule)
 
     tensorboard_callback = keras.callbacks.TensorBoard(
-        log_dir='logs/c7_bp_cp_'
+        log_dir='logs/thalamic_nuclei_only_wmn'
     )
 
     callbacks = [
         model_checkpoint_callback,
         # early_stop_callback,
         tensorboard_callback,
-        #learning_rate_callback
+        learning_rate_callback
     ]
 
     print('start fitting on {0}'.format(_label))

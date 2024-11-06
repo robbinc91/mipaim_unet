@@ -1,0 +1,7 @@
+{    
+    "labels": {
+        "Background":             				 0,
+        "Cortex":                             	 1,
+		"WM":				             		 2
+    }
+}

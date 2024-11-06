@@ -1,0 +1,12 @@
+{    
+    "labels": {
+        "Background":             				 0,
+        "RC cortex":                             1,
+		"LC cortex":				             2,
+		"Vermis I-V":				             3,
+		"Vermis VI-VII":			             4,
+		"Vermis VIII-X":			             5,
+		"RC WM":		                         6,
+		"LC WM":			                     7
+    }
+}

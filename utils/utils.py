@@ -32,7 +32,7 @@ cersegsys_test_prt = [i for i in range(
 
 
 cersegsys_train_prt_augm = [i for i in range(1, 601)]  # Added new images
-cersegsys_dev_prt_augm = [i for i in range(601, 760)]
+cersegsys_dev_prt_augm = [i for i in range(601, 761)]
 
 
 def visualize(PATH, View="Axial_View", cmap=None):
@@ -312,6 +312,7 @@ def cersegsys_output_generator(rng, rnga=None, label='cerebellum', second_lbl=''
     ret.update({
         'a{:03d}{}.nii.gz'.format(i, second_lbl): 'a{:03d}-{}.nii.gz'.format(i, label) for i in rnga
     })
+
     return ret
 
 
@@ -331,13 +332,41 @@ def create_cersegsys_partitions(label='cerebellum', use_augmentation=False, seco
             }
             outputs = cersegsys_output_generator(
                 cersegsys_train_prt + cersegsys_dev_prt, cersegsys_train_prt_augm + cersegsys_dev_prt_augm, label, second_lbl)
-    else if use_augmentation:
+    elif use_augmentation:
         partition = {
             'train': cersegsys_partition_generator([], cersegsys_train_prt_augm, second_lbl),
             'validation': cersegsys_partition_generator([], cersegsys_dev_prt_augm, second_lbl)
         }
         outputs = cersegsys_output_generator(
             [], cersegsys_train_prt_augm + cersegsys_dev_prt_augm, label, second_lbl)
+
+    return partition, outputs
+
+
+THALAMIC_IMAGES = sorted([98, 66, 85, 109, 40, 61, 91, 52, 58, 87, 68, 93, 93, 19, 70, 44, 12, 70, 37, 108, 92, 57, 79, 108, 61, 43, 61, 50, 67, 56, 93, 15, 42, 37, 101, 39, 91, 58, 85, 92, 92, 36, 43, 36, 47, 76, 35, 88, 81, 27, 65, 70, 62, 61, 94, 8, 2, 30, 95, 103, 16, 54, 58, 16, 109, 71, 52, 22, 43, 46])
+TOTAL_AUGMENTED_THALAMIC_ = 70 * 15
+def create_thalamic_partitions(label='-seg', use_augmentation=False, second_lbl='', use_originals=True, train_percent=90, label_append=''):
+    import random
+    originals = random.sample(THALAMIC_IMAGES, k=63)
+    augmented = random.sample([i for i in range(1, TOTAL_AUGMENTED_THALAMIC_ + 1)], k = 945)
+
+    outputs = {
+        '{:02d}_cropped_48x64x64'.format(i) + label_append + '.nii.gz': '{:02d}-seg_cropped_48x64x64.nii.gz'.format(i)
+        for i in THALAMIC_IMAGES
+    }
+    outputs.update({
+        'augmented/{:03d}'.format(i) + label_append + '.nii.gz': 'augmented/{:03d}-seg.nii.gz'.format(i)
+        for i in range(1, TOTAL_AUGMENTED_THALAMIC_ + 1)
+    })
+
+
+    train_partition = ['{:02d}_cropped_48x64x64'.format(i) + label_append + '.nii.gz' for i in originals] + ['augmented/{:03d}'.format(j) + label_append + '.nii.gz' for j in augmented]
+    val_partition = ['{:02d}_cropped_48x64x64'.format(i) + label_append + '.nii.gz' for i in THALAMIC_IMAGES if i not in originals] + ['augmented/{:03d}'.format(j) + label_append + '.nii.gz' for j in range(1, TOTAL_AUGMENTED_THALAMIC_ + 1) if j not in augmented]
+
+    partition = {
+        'train': train_partition,
+        'validation': val_partition
+    }
 
     return partition, outputs
 
@@ -388,7 +417,8 @@ class DataGenerator(keras.utils.Sequence):
                  binary=False,
                  labels=None,
                  filter_label=None,
-                 is_segmentation=True):
+                 is_segmentation=True,
+                 input_mask_prefix=None):
         self.dim = dim
         self.batch_size = batch_size
         self.outputs = outputs
@@ -403,6 +433,7 @@ class DataGenerator(keras.utils.Sequence):
         self.filter_label = filter_label
         self.is_segmentation = is_segmentation
         self.classes = {}
+        self.input_mask_prefix = input_mask_prefix
         if not self.is_segmentation:
             with open('{0}{1}'.format(self.root, 'classes.txt')) as input_file:
                 for line in input_file:
@@ -427,20 +458,28 @@ class DataGenerator(keras.utils.Sequence):
 
         list_ids_temp = [self.list_ids[k] for k in indexes]
 
-        X, y = self.__data_generation(list_ids_temp)
+        return self.__data_generation(list_ids_temp)
 
-        return X, y
+        #return X, y
 
     def __data_generation(self, list_ids_temp):
         X = []
         y = []
+        X1 = []
 
         for i, ID in enumerate(list_ids_temp):
-            x = get_data(self.root + self.in_folder + '/' + ID)
+            x = get_data(self.root + self.in_folder + '/' + ID)#.astype(np.float32)
             if self.histogram_equalization is True:
                 x = x.round().astype(np.uint8)
                 x = histeq(x)
+
             X.append(x[None, ...])
+
+            if self.input_mask_prefix is not None:
+                #print('opening', (self.root + self.in_folder + '/' + ID).replace('.nii', f'{self.input_mask_prefix}.nii'))
+                x_ = get_data((self.root + self.in_folder + '/' + ID).replace('.nii', f'{self.input_mask_prefix}.nii'))
+                X1.append(x_[None, ...])
+            
 
             if self.is_segmentation:
                 # it's a segmentation/parcellation task
@@ -471,7 +510,7 @@ class DataGenerator(keras.utils.Sequence):
                 else:
                     # segmentation, or non binary parcellation
                     tmp = get_data(self.root + self.in_folder +
-                                   '/' + self.outputs[ID])  # [None, ...]
+                                   '/' + self.outputs[ID]).round().astype(np.uint8)  # [None, ...]
                     #_img = []
                     # for i in range(1, 5):
                     #    _img.append(tmp == i)
@@ -479,7 +518,14 @@ class DataGenerator(keras.utils.Sequence):
                     # _img = np.array(_img).astype(np.float32)#[None, ...]
                     #one_hot = OneHotEncoder()
                     #_img =  np.stack([tmp==i for i in range(1, 5)], axis=0).astype(np.float32)
-                    _img = onehot(tmp, 4)
+                    _img = onehot(tmp, 13)
+                    # TODO: make this automatically
+                    # 3 brainstem parcellation
+                    # 7 cerebellum parcellation
+                    # 2 cerebellum tissues
+                    # 13 thalamic nuclei
+
+                    #print(ID, self.outputs[ID], '_img.shape:', _img.shape)
                     #_img = tf.transpose(_img, perm=[3, 0, 1, 2])
                     # print(_img.shape)
                     y.append(_img.astype(np.float32))
@@ -496,6 +542,7 @@ class DataGenerator(keras.utils.Sequence):
                 y.append(self.classes[ID])
 
         X = np.array(X)
+        X1 = np.array(X1)
 
         if not self.is_segmentation:
             y = to_categorical(y, num_classes=3)
@@ -504,6 +551,9 @@ class DataGenerator(keras.utils.Sequence):
         else:
             y = np.array(y)
 
+        if self.input_mask_prefix is not None:
+            return {'input_1': X, 'input_2': X1}, y
+        
         return X, y
 
 

@@ -64,6 +64,8 @@ def dice_loss(y_true, y_pred):
 
 
 def soft_dice_score(image1, image2, axis=(-3, -2, -1), eps=0.001):
+    #print(image1.shape,image2.shape)
+    #print(image1.dtype, image2.dtype)
     """Calculate average Dice across channels
 
     Args:

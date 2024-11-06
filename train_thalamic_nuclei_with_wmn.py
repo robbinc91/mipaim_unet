@@ -21,13 +21,12 @@ if __name__ == '__main__':
     sess = tf.compat.v1.Session(config=config)
     tf.compat.v1.enable_eager_execution()
 
-    LABELS = json.load(open('labels_c7_bp_cp.json'))['labels']
-    output_folder = 'weights/mipaim_unet/20230421_big/'
+    #LABELS = json.load(open('labels_c7_bp_cp.json'))['labels']
+    output_folder = 'weights/mipaim_unet/20241006_with_wmn/'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    # 400 epochs per label
-    EPOCHS = 300
+    EPOCHS = 1000
     start_epoch = 0
     retrain = False
 
@@ -66,41 +65,45 @@ if __name__ == '__main__':
             print(f'restart training from epoch {start_epoch} with val_dice_score {last_score}')
     else:
       model_ = mipaim_unet(
-          shape=CERSEGSYS_7_SHAPE,
+          shape=THALAMUS_LEFT_SHAPE,
           only_3x3_filters=ONLY_3X3_FILTERS,
           dropout=0.3,
-          filters_dim=[16, 32, 64, 128, 256],
+          filters_dim=[8,16,32,64,128],
           instance_normalization=True,
-          num_labels=11)
-      model_.compile(optimizer='adam',
+          num_labels=14,
+          skip_connections_treatment_number=0,
+          use_input_mask=True)
+    model_.compile(optimizer='adam',
                     loss=soft_dice_loss,
                     metrics=[soft_dice_score])
     model_.summary()
 
-    partition, outputs = create_cersegsys_partitions(
+    partition, outputs = create_thalamic_partitions(
         label=_label, 
         use_augmentation=True, 
         second_lbl='', 
-        use_originals=False # not using original images, as there is a big chance of having them among the augmented ones
+        use_originals=True 
     )
     train_generator = DataGenerator(partition['train'],
                                     outputs,
                                     batch_size=1,
-                                    root=CERSEGSYS_7_ROOT,
+                                    root=THALAMUS_LEFT_ROOT,
                                     shuffle=True,
                                     histogram_equalization=False,
-                                    in_folder='data',
+                                    in_folder='crop_48x64x64',
                                     is_segmentation=True,
-                                    binary=False)
+                                    binary=False,
+                                    input_mask_prefix='-remap')
     val_generator = DataGenerator(partition['validation'],
                                   outputs,
                                   batch_size=1,
-                                  root=CERSEGSYS_7_ROOT,
+                                  root=THALAMUS_LEFT_ROOT,
                                   shuffle=True,
                                   histogram_equalization=False,
-                                  in_folder='data',
+                                  in_folder='crop_48x64x64',
                                   is_segmentation=True,
-                                  binary=False)
+                                  binary=False,
+                                  input_mask_prefix='-remap')
 
     model_checkpoint_callback = tensorflow.keras.callbacks.ModelCheckpoint(
         __output_folder +
@@ -116,14 +119,14 @@ if __name__ == '__main__':
     learning_rate_callback = keras.callbacks.LearningRateScheduler(lr_schedule)
 
     tensorboard_callback = keras.callbacks.TensorBoard(
-        log_dir='logs/c7_bp_cp_big'
+        log_dir='logs/thalamic_nuclei_with_wmn'
     )
 
     callbacks = [
         model_checkpoint_callback,
         # early_stop_callback,
         tensorboard_callback,
-        #learning_rate_callback
+        learning_rate_callback
     ]
 
     print('start fitting on {0}'.format(_label))

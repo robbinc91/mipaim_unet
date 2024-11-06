@@ -43,10 +43,10 @@ def decode_parcellation(layers,
                             padding='same',
                             data_format=IMAGE_ORDERING)(layer_6)
 
-    normalization_axis = 1 if IMAGE_ORDERING is 'channels_first' else -1
+    normalization_axis = 1 if IMAGE_ORDERING == 'channels_first' else -1
 
     if instance_normalization is True:
-        layer_6 = InstanceNormalization(axis=normalization_axis)(layer_6)
+        layer_6 = InstanceNormalization(dtype='float32')(layer_6)
 
     layer_61 = Conv(filters=num_labels,
                    kernel_size=1,
@@ -74,7 +74,7 @@ def decode_parcellation(layers,
                             data_format=IMAGE_ORDERING)(layer_7)
 
     if instance_normalization is True:
-        layer_7 = InstanceNormalization(axis=normalization_axis)(layer_7)
+        layer_7 = InstanceNormalization(dtype='float32')(layer_7)
 
     layer_71 = Conv(filters=num_labels,
                     kernel_size=1,
@@ -102,7 +102,7 @@ def decode_parcellation(layers,
                             data_format=IMAGE_ORDERING)(layer_8)
 
     if instance_normalization is True:
-        layer_8 = InstanceNormalization(axis=normalization_axis)(layer_8)
+        layer_8 = InstanceNormalization(dtype='float32')(layer_8)
 
     layer_81 = Conv(filters=num_labels,
                     kernel_size=1,
@@ -129,7 +129,7 @@ def decode_parcellation(layers,
                             data_format=IMAGE_ORDERING)(layer_9)
 
     if instance_normalization is True:
-        layer_9 = InstanceNormalization(axis=normalization_axis)(layer_9)
+        layer_9 = InstanceNormalization(dtype='float32')(layer_9)
 
     layer_91 = Conv(filters=num_labels,
                     kernel_size=1,
@@ -149,9 +149,9 @@ def decode_parcellation(layers,
     layer_10 = fn(layer_10, filters_dim[0], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
 
     if instance_normalization is True:
-        layer_10 = InstanceNormalization(axis=normalization_axis)(layer_10)
+        layer_10 = InstanceNormalization(dtype='float32')(layer_10)
 
-    _output = Conv(filters=num_labels,
+    _decoded = Conv(filters=num_labels,
                    kernel_size=3,
                    activation='relu',
                    strides=1,
@@ -159,23 +159,23 @@ def decode_parcellation(layers,
                    data_format=IMAGE_ORDERING)(layer_10)
 
     # print(layer_91.shape)
-    # print(_output.shape)
-    _output = Add()([layer_91, _output])
+    # print(_decoded.shape)
+    _decoded = Add()([layer_91, _decoded])
 
-    _output = Conv(filters=num_labels,
+    _decoded = Conv(filters=num_labels,
                    kernel_size=1,
                    activation='relu',
                    padding='valid',
-                   data_format=IMAGE_ORDERING)(_output)
+                   data_format=IMAGE_ORDERING)(_decoded)
 
     if dropout is not None:
-        _output = Dropout(dropout)(_output)
+        _decoded = Dropout(dropout)(_decoded)
 
 
     
-    _output = Activation('softmax')(_output)
+    _decoded = Activation('softmax')(_decoded)
 
-    return _output
+    return _decoded
 
 
 def decode_inception(layers,
@@ -202,10 +202,10 @@ def decode_inception(layers,
                             padding='same',
                             data_format=IMAGE_ORDERING)(layer_6)
 
-    normalization_axis = 1 if IMAGE_ORDERING is 'channels_first' else -1
+    normalization_axis = 1 if IMAGE_ORDERING == 'channels_first' else -1
 
     if instance_normalization is True:
-        layer_6 = InstanceNormalization(axis=normalization_axis)(layer_6)
+        layer_6 = InstanceNormalization(dtype='float32')(layer_6)
 
     layer_7 = Concatenate(axis=1)([layers[3], layer_6])
     layer_7 = fn(layer_7, filters_dim[3], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
@@ -218,7 +218,7 @@ def decode_inception(layers,
                             data_format=IMAGE_ORDERING)(layer_7)
 
     if instance_normalization is True:
-        layer_7 = InstanceNormalization(axis=normalization_axis)(layer_7)
+        layer_7 = InstanceNormalization(dtype='float32')(layer_7)
 
     layer_8 = Concatenate(axis=1)([layers[2], layer_7])
     layer_8 = fn(layer_8, filters_dim[2], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
@@ -231,7 +231,7 @@ def decode_inception(layers,
                             data_format=IMAGE_ORDERING)(layer_8)
 
     if instance_normalization is True:
-        layer_8 = InstanceNormalization(axis=normalization_axis)(layer_8)
+        layer_8 = InstanceNormalization(dtype='float32')(layer_8)
 
     layer_9 = Concatenate(axis=1)([layers[1], layer_8])
     layer_9 = fn(layer_9, filters_dim[1], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
@@ -244,16 +244,16 @@ def decode_inception(layers,
                             data_format=IMAGE_ORDERING)(layer_9)
 
     if instance_normalization is True:
-        layer_9 = InstanceNormalization(axis=normalization_axis)(layer_9)
+        layer_9 = InstanceNormalization(dtype='float32')(layer_9)
 
     layer_10 = Concatenate(axis=1)([layers[0], layer_9])
     layer_10 = fn(layer_10, filters_dim[0], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
 
     if instance_normalization is True:
-        layer_10 = InstanceNormalization(axis=normalization_axis)(layer_10)
+        layer_10 = InstanceNormalization(dtype='float32')(layer_10)
 
     
-    _output = Conv(filters=1,
+    _decoded = Conv(filters=1,
                   kernel_size=1,
                   activation='relu',
                   strides=1,
@@ -261,14 +261,14 @@ def decode_inception(layers,
                   data_format=IMAGE_ORDERING)(layer_10)
 
     if dropout is not None:
-        _output = Dropout(dropout)(_output)
+        _decoded = Dropout(dropout)(_decoded)
 
 
-    _output = Activation('softmax')(_output)
+    _decoded = Activation('softmax')(_decoded)
 
     
 
-    return _output
+    return _decoded
 
 
 def decode_inception_v2(layers,
@@ -277,88 +277,95 @@ def decode_inception_v2(layers,
                      dropout=None,
                      only_3x3_filters=False,
                      filters_dim=None,
-                     instance_normalization=False):
+                     instance_normalization=False,
+                     kernel_initializer=None):
 
     if filters_dim is None:
         filters_dim = [8, 16, 32, 64, 128]
 
     fn = basic_naive_inception if naive else basic_rdim_inception
-    Conv = Conv3D if len(layers[0].shape) == 5 else Conv2D
     ConvTranspose = Conv3DTranspose if len(layers[0].shape) == 5 else Conv2DTranspose
 
-    layer_6 = fn(layers[4], filters_dim[4], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
-    # layer_6 =UpSampling3D(size=(3, 3, 3))(layer_6)
-    layer_6 = ConvTranspose(filters=filters_dim[4],
+    normalization_axis = 1 if IMAGE_ORDERING == 'channels_first' else -1
+
+    _decoded = fn(layers[4], filters_dim[4], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+
+    _decoded = ConvTranspose(filters=filters_dim[4],
                             kernel_size=3,
                             activation='relu',
                             strides=2,
                             padding='same',
-                            data_format=IMAGE_ORDERING)(layer_6)
-
-    normalization_axis = 1 if IMAGE_ORDERING is 'channels_first' else -1
+                            data_format=IMAGE_ORDERING,
+                            kernel_initializer=kernel_initializer)(_decoded)
 
     if instance_normalization is True:
-        layer_6 = InstanceNormalization(axis=normalization_axis)(layer_6)
+        _decoded = InstanceNormalization(dtype='float32', name="decoder_instance_normalization_1")(_decoded)
 
-    layer_7 = Concatenate(axis=1)([layers[3], layer_6])
-    layer_7 = fn(layer_7, filters_dim[3], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
-    # layer_7 = UpSampling3D(size=(3, 3, 3))(layer_7)
-    layer_7 = ConvTranspose(filters=filters_dim[3],
+    _decoded = Concatenate(axis=1, name='decoder_concatenate_1')([layers[3], _decoded])
+    _decoded = fn(_decoded, filters_dim[3], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, kernel_initializer=kernel_initializer)
+
+    _decoded = ConvTranspose(filters=filters_dim[3],
                             kernel_size=3,
                             activation='relu',
                             strides=2,
                             padding='same',
-                            data_format=IMAGE_ORDERING)(layer_7)
+                            data_format=IMAGE_ORDERING,
+                            kernel_initializer=kernel_initializer)(_decoded)
 
     if instance_normalization is True:
-        layer_7 = InstanceNormalization(axis=normalization_axis)(layer_7)
+        _decoded = InstanceNormalization(dtype='float32', name="decoder_instance_normalization_2")(_decoded)
 
-    layer_8 = Concatenate(axis=1)([layers[2], layer_7])
-    layer_8 = fn(layer_8, filters_dim[2], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
-    # layer_8 = UpSampling3D(size=(3, 3, 3))(layer_8)
-    layer_8 = ConvTranspose(filters=filters_dim[2],
+    #print('concatenating shapes:', _decoded.shape, layers[2].shape)
+    _decoded = Concatenate(axis=1, name='decoder_concatenate_2')([layers[2], _decoded])
+    _decoded = fn(_decoded, filters_dim[2], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, kernel_initializer=kernel_initializer)
+
+    _decoded = ConvTranspose(filters=filters_dim[2],
                             kernel_size=3,
                             activation='relu',
                             strides=2,
                             padding='same',
-                            data_format=IMAGE_ORDERING)(layer_8)
+                            data_format=IMAGE_ORDERING,
+                            kernel_initializer=kernel_initializer)(_decoded)
 
     if instance_normalization is True:
-        layer_8 = InstanceNormalization(axis=normalization_axis)(layer_8)
+        _decoded = InstanceNormalization(dtype='float32', name="decoder_instance_normalization_3")(_decoded)
 
-    layer_9 = Concatenate(axis=1)([layers[1], layer_8])
-    layer_9 = fn(layer_9, filters_dim[1], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
-    # layer_9 = UpSampling3D(size=(3, 3, 3))(layer_9)
-    layer_9 = ConvTranspose(filters=filters_dim[1],
+
+    _decoded = Concatenate(axis=1, name='decoder_concatenate_3')([layers[1], _decoded])
+    _decoded = fn(_decoded, filters_dim[1], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, kernel_initializer=kernel_initializer)
+
+    _decoded = ConvTranspose(filters=filters_dim[1],
                             kernel_size=3,
                             activation='relu',
                             strides=2,
                             padding='same',
-                            data_format=IMAGE_ORDERING)(layer_9)
+                            data_format=IMAGE_ORDERING,
+                            kernel_initializer=kernel_initializer)(_decoded)
 
     if instance_normalization is True:
-        layer_9 = InstanceNormalization(axis=normalization_axis)(layer_9)
+        _decoded = InstanceNormalization(dtype='float32', name="decoder_instance_normalization_4")(_decoded)
 
-    layer_10 = Concatenate(axis=1)([layers[0], layer_9])
-    layer_10 = fn(layer_10, filters_dim[0], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters)
+    _decoded = Concatenate(axis=1, name='decoder_concatenate_4')([layers[0], _decoded])
 
-    if instance_normalization is True:
-        layer_10 = InstanceNormalization(axis=normalization_axis)(layer_10)
+    _decoded = fn(_decoded, filters_dim[0], IMAGE_ORDERING=IMAGE_ORDERING, only_3x3_filters=only_3x3_filters, kernel_initializer=kernel_initializer)
 
-    return layer_10
+    if dropout is not None:
+        _decoded = Dropout(dropout)(_decoded)
+
+    return _decoded
 
 
 def decode_classification(_layers, dropout=None, n_classes=3):
-    _output = Flatten()(_layers)
-    _output = Dense(256)(_output)
-    _output = Activation('relu')(_output)
+    _decoded = Flatten()(_layers)
+    _decoded = Dense(256)(_decoded)
+    _decoded = Activation('relu')(_decoded)
     if dropout is not None:
-        _output = Dropout(dropout)(_output)
+        _decoded = Dropout(dropout)(_decoded)
 
-    _output = Dense(256, activation='relu')(_output)
-    _output = Dense(n_classes, activation='softmax')(_output)
+    _decoded = Dense(256, activation='relu')(_decoded)
+    _decoded = Dense(n_classes, activation='softmax')(_decoded)
 
-    return _output
+    return _decoded
 
 
 def decode(inputs, outputs, conv_21, conv_32, IMAGE_ORDERING='channels_first'):
@@ -379,17 +386,17 @@ def decode(inputs, outputs, conv_21, conv_32, IMAGE_ORDERING='channels_first'):
 
     if inputs['t1_input'] is not None:
         inputs_array.append(inputs['t1_input'])
-        outputs_array.append(outputs['t1_output'])
+        outputs_array.append(outputs['t1_decoded'])
         conv_21_array.append(conv_21['conv_21_t1'])
         conv_32_array.append(conv_32['conv_32_t1'])
     if inputs['flair_input'] is not None:
         inputs_array.append(inputs['flair_input'])
-        outputs_array.append(outputs['flair_output'])
+        outputs_array.append(outputs['flair_decoded'])
         conv_21_array.append(conv_21['conv_21_FLAIR'])
         conv_32_array.append(conv_32['conv_32_FLAIR'])
     if inputs['ir_input'] is not None:
         inputs_array.append(inputs['ir_input'])
-        outputs_array.append(outputs['ir_output'])
+        outputs_array.append(outputs['ir_decoded'])
         conv_21_array.append(conv_21['conv_21_IR'])
         conv_32_array.append(conv_32['conv_32_IR'])
 
