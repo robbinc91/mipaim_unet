@@ -1,68 +1,23 @@
-# CERSEGSYS: CERebellum SEGmentation SYStem 
+# MIPAIM_UNET
 
-## Average time
+UNet for Medical Image Parcellation with Attention and Inception Modules
 
-~3m30s
+## Main description
 
-## Dependencies
-
-Python dependencies:
-
-1. tensorflow==2.0.0
-2. keras==2.3.1
-3. pydicom==2.0.0
-4. h5py==2.9.0
-5. nibabel==3.1.1
-6. deepbrain
-7. cv2==4.3.0
-
-Other dependencies:
-
-8. ANTS
-9. ROBEX
-
-## Algorithm
-
-The following processing steps are performed:
-
-1. **N4 bias field correction**. [ROBEX](https://www.nitrc.org/projects/robex/) is used to estimate a brain mask. This mask is then smoothed to generate a brain weight image. N4 from [ANTs](http://stnava.github.io/ANTs/) is used to perform the bias field correction with the weight image calculated above.
-
-2. **MNI registration**. The images are rigidly registered to the [ICBM 2009c](http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009) nonlinear symmetric template using the [ANTs](http://stnava.github.io/ANTs/) package.
-
-3. **Cerebellum segmentation**. The cerebellum of an MNI-registered MPRAGE image is segmented using a U-net with Inception modules. Until now, no postprocessing is applied, though may be a longest connected componented could improve results.
-
-4. **Transform back to the original space**. Since parcellation is performed in MNI space, we additionally transform the segmentation into the original image space.
+This zero - organized repo contains code for testing deep learning models in semantic segmentation tasks. The models here contained are:
+* unet: U-Net
+* inception_unet: U-Net with inception modules
+* mipaim_unet: UNet for Medical Image Parcellation with Attention and Inception Modules
 
 
-## Future steps
+## Repo organization
+In progress
 
-The following steps will be included in next versions:
+## Use
+Feel free to use any resource shared within this repo. If it is useful for your rowk or research, please cite:
 
-1. **Volume of each region**. The volume of segmented region will be calculated in mm^3.
+* Cabeza-Ruiz, R., Velázquez-Pérez, L., Linares-Barranco, A., & Pérez-Rodríguez, R. (2022). Convolutional Neural Networks for Segmenting Cerebellar Fissures from Magnetic Resonance Imaging. Sensors, 22(4), 1345. https://doi.org/10.3390/s22041345
 
-2. **Result visualization**. A GUI application is beeing developed for visualization purposes. Check app.py.
+* Cabeza-Ruiz, R., Velázquez-Pérez, L., Pérez-Rodríguez, R. (2021). Convolutional Neural Networks as Support Tools for Spinocerebellar Ataxia Detection from Magnetic Resonances. In: Hernández Heredia, Y., Milián Núñez, V., Ruiz Shulcloper, J. (eds) Progress in Artificial Intelligence and Pattern Recognition. IWAIPR 2021. Lecture Notes in Computer Science(), vol 13055. Springer, Cham. https://doi.org/10.1007/978-3-030-89691-1_11
 
-## Docker image installation
-
-`.tar.gz` file is provided. Use the following command;
-
-```bash
-gunzip cersegsys.tar.gz
-docker load --input cersegsys.tar
-```
-
-### Usage
-
-```bash
-# segmentation
-docker run -v "$PWD:$PWD" -w "$PWD" -t --user $(id -u):$(id -g) --rm cersegsys -i a01.nii.gz -o ./a01output -z
-
-# segmentation using custom model
-docker run -v "$PWD:$PWD" -w "$PWD" -t --user $(id -u):$(id -g) --rm cersegsys -i a01.nii.gz -o ./a01output -z -m ./model.h5
-
-# apply only preprocessing steps
-docker run -v "$PWD:$PWD" -w "$PWD" -t --user $(id -u):$(id -g) --rm cersegsys -i a01.nii.gz -o ./a01output
-
-# apply only preprocess, registering a provided mask too
-docker run -v "$PWD:$PWD" -w "$PWD" -t --user $(id -u):$(id -g) --rm cersegsys -i a01.nii.gz -o ./a01output -x ./a01-cerebellum.nii.gz
-```
+* Cabeza-Ruiz, R., Velázquez-Pérez, L., Pérez-Rodríguez, R. et al. ConvNets for automatic detection of polyglutamine SCAs from brain MRIs: state of the art applications. Med Biol Eng Comput 61, 1–24 (2023). https://doi.org/10.1007/s11517-022-02714-w

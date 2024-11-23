@@ -1,6 +1,6 @@
 from email import generator
 import tensorflow as tf
-from model import mipaim_unet
+from model import unet
 from utils import *
 import keras
 from common import *
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     tf.compat.v1.enable_eager_execution()
 
     #LABELS = json.load(open('labels_c7_bp_cp.json'))['labels']
-    output_folder = 'weights/mipaim_unet/20241006_with_wmn/'
+    output_folder = 'weights/unet/20241006_/'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
@@ -64,15 +64,8 @@ if __name__ == '__main__':
             last_score = last_file[last_file.find('val_dice_score='):-3][15:]
             print(f'restart training from epoch {start_epoch} with val_dice_score {last_score}')
     else:
-      model_ = mipaim_unet(
-          shape=THALAMUS_LEFT_SHAPE,
-          only_3x3_filters=ONLY_3X3_FILTERS,
-          dropout=0.3,
-          filters_dim=[8,16,32,64,128],
-          instance_normalization=True,
-          num_labels=14,
-          skip_connections_treatment_number=0,
-          use_input_mask=True)
+      model_ = unet(True, False, False, IMAGE_ORDERING='channels_first', shape=THALAMUS_LEFT_SHAPE, num_labels=14)
+
     model_.compile(optimizer='adam',
                     loss=soft_dice_loss,
                     metrics=[soft_dice_score])
@@ -92,8 +85,7 @@ if __name__ == '__main__':
                                     histogram_equalization=False,
                                     in_folder='crop_48x64x64',
                                     is_segmentation=True,
-                                    binary=False,
-                                    input_mask_prefix='-remap')
+                                    binary=False)
     val_generator = DataGenerator(partition['validation'],
                                   outputs,
                                   batch_size=1,
@@ -102,8 +94,7 @@ if __name__ == '__main__':
                                   histogram_equalization=False,
                                   in_folder='crop_48x64x64',
                                   is_segmentation=True,
-                                  binary=False,
-                                  input_mask_prefix='-remap')
+                                  binary=False)
 
     model_checkpoint_callback = tensorflow.keras.callbacks.ModelCheckpoint(
         __output_folder +
@@ -119,7 +110,7 @@ if __name__ == '__main__':
     learning_rate_callback = keras.callbacks.LearningRateScheduler(lr_schedule)
 
     tensorboard_callback = keras.callbacks.TensorBoard(
-        log_dir='logs/thalamic_nuclei_with_wmn'
+        log_dir='logs/thalamic_nuclei_unet_'
     )
 
     callbacks = [

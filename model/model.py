@@ -8,13 +8,14 @@ from decoder import decode, decode_inception, decode_inception_v2, decode_classi
 from output import output_mapper
 
 
-def unet(t1, FLAIR=None, IR=None, IMAGE_ORDERING='channels_first', shape=(1, 240, 240, 48)):
+def unet(t1, FLAIR=None, IR=None, IMAGE_ORDERING='channels_first', shape=(1, 240, 240, 48), num_labels=1):
     """
     :param t1: any
     :param FLAIR: any | None
     :param IR: any | None
     :param IMAGE_ORDERING: string
     :param shape: tuple
+    :param num_labels: integer
     :return: keras.models.Model
     """
 
@@ -22,9 +23,21 @@ def unet(t1, FLAIR=None, IR=None, IMAGE_ORDERING='channels_first', shape=(1, 240
     inputs, outputs, conv_21, conv_32, = encode(
         t1, FLAIR, IR, IMAGE_ORDERING, shape)
 
+
+    print(outputs)
+    print('create decoder')
     # decoder stuff
-    inputs, output = decode(inputs, outputs, conv_21, conv_32, IMAGE_ORDERING)
-    return Model(inputs[0], output)
+    inputs, _output = decode(inputs, outputs, conv_21, conv_32, IMAGE_ORDERING)
+
+    _output = output_mapper(
+        _output,
+        num_labels,
+        'relu',
+        IMAGE_ORDERING=IMAGE_ORDERING,
+        instance_normalization=True)
+    
+    _input = inputs[0] if len(inputs) == 1 else inputs
+    return Model(_input, _output)
 
 
 def inception_unet(shape=(1, 240, 240, 48),
