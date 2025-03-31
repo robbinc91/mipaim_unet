@@ -1,10 +1,15 @@
-# 🧪 PhD Research Code Vault: Semantic Segmentation Edition 🏗️
-
-## Some description?
+# 🏥 MIP-AIM? MIP-IM? Whatever. UNet Zoo 🦄
+![Last Updated](https://img.shields.io/github/last-commit/robbinc91/mipaim_unet?label=Last%20Updated&style=flat-square&color=blue)
+*(The only thing reliably updated in this repo)*
 
  Welcome to my glorious dumpster fire of PhD code! 🔥🗑️ This repository contains the chaotic scripts, models, and experiments that powered my PhD research—focused on semantic segmentation (because playing "connect the pixels" counts as science).
 
 ⚠️ Warning: This repo is ZERO-ORGANIZED (yes, in bold again for emotional impact). It's a raw, barely-commented archive of years of work. I might organize it between the heat death of the universe and my next LinkedIn post. Until then, bring a compass.
+
+Here you'll find:
+- Questionably-thawed models 🧊
+- Half-digested experiments 🤢
+- That one script that *might* be important ✨
 
 ## 🔍 What’s Inside? (Besides Mild Regret?)
 
@@ -65,4 +70,4 @@ If you (against all odds) find something useful, here’s how to credit me witho
 
 ## 🌟 Good luck! (You’ll need it.)
 
-![Last Updated](https://img.shields.io/github/last-commit/YOUR_USERNAME/YOUR_REPO?label=Last%20Updated&style=flat-square&color=blue)
+
