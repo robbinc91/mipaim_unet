@@ -17,12 +17,12 @@ def encode(t1, FLAIR=False, IR=False, IMAGE_ORDERING='channels_first', shape=(1,
 
     print(t1, FLAIR, IR)
 
-    img_input_t1 = Input(shape=shape, name='T1') if t1 else None
+    img_input_t1 = Input(shape=shape, name='input_1') if t1 else None
     maxpool_t1, conv_21_t1, conv_32_t1 = t1_encoder(
         img_input_t1, IMAGE_ORDERING) if t1 else (None, None, None)
 
     img_input_FLAIR = Input(
-        shape=shape, name="FLAIR") if FLAIR else None
+        shape=shape, name="input_2") if FLAIR else None
     maxpool_FLAIR, conv_21_FLAIR, conv_32_FLAIR = flair_encoder(
         img_input_FLAIR, IMAGE_ORDERING) if FLAIR else (None, None, None)
 
