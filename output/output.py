@@ -16,7 +16,8 @@ def output_mapper(_input,
                    activation=activation,
                    strides=1,
                    padding='same',
-                   data_format=IMAGE_ORDERING)(_input)
+                   data_format=IMAGE_ORDERING,
+                   use_bias=False)(_input)
     
     normalization_axis = 1 if IMAGE_ORDERING == 'channels_first' else -1
 

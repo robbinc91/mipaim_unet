@@ -5,6 +5,8 @@ from keras.layers.normalization import BatchNormalization
 from encoder import basic_rdim_inception, basic_naive_inception
 from keras_contrib.layers import InstanceNormalization
 
+from encoder.inception_encoder import conv_block
+
 def decode_parcellation(layers,
                         naive=False,
                         IMAGE_ORDERING='channels_first',
@@ -270,7 +272,7 @@ def decode_inception(layers,
 
     return _decoded
 
-
+import tensorflow as tf
 def decode_inception_v2(layers,
                      naive=False,
                      IMAGE_ORDERING='channels_first',
@@ -278,12 +280,15 @@ def decode_inception_v2(layers,
                      only_3x3_filters=False,
                      filters_dim=None,
                      instance_normalization=False,
-                     kernel_initializer=None):
+                     kernel_initializer=None,
+                     force_unet=False):
 
     if filters_dim is None:
         filters_dim = [8, 16, 32, 64, 128]
 
     fn = basic_naive_inception if naive else basic_rdim_inception
+    if force_unet:
+        fn = conv_block
     ConvTranspose = Conv3DTranspose if len(layers[0].shape) == 5 else Conv2DTranspose
 
     normalization_axis = 1 if IMAGE_ORDERING == 'channels_first' else -1
@@ -296,7 +301,8 @@ def decode_inception_v2(layers,
                             strides=2,
                             padding='same',
                             data_format=IMAGE_ORDERING,
-                            kernel_initializer=kernel_initializer)(_decoded)
+                            kernel_initializer=kernel_initializer,
+                            use_bias=False)(_decoded)
 
     if instance_normalization is True:
         _decoded = InstanceNormalization(dtype='float32', name="decoder_instance_normalization_1")(_decoded)
@@ -310,7 +316,8 @@ def decode_inception_v2(layers,
                             strides=2,
                             padding='same',
                             data_format=IMAGE_ORDERING,
-                            kernel_initializer=kernel_initializer)(_decoded)
+                            kernel_initializer=kernel_initializer,
+                            use_bias=False)(_decoded)
 
     if instance_normalization is True:
         _decoded = InstanceNormalization(dtype='float32', name="decoder_instance_normalization_2")(_decoded)
@@ -325,7 +332,8 @@ def decode_inception_v2(layers,
                             strides=2,
                             padding='same',
                             data_format=IMAGE_ORDERING,
-                            kernel_initializer=kernel_initializer)(_decoded)
+                            kernel_initializer=kernel_initializer,
+                            use_bias=False)(_decoded)
 
     if instance_normalization is True:
         _decoded = InstanceNormalization(dtype='float32', name="decoder_instance_normalization_3")(_decoded)
@@ -340,7 +348,8 @@ def decode_inception_v2(layers,
                             strides=2,
                             padding='same',
                             data_format=IMAGE_ORDERING,
-                            kernel_initializer=kernel_initializer)(_decoded)
+                            kernel_initializer=kernel_initializer,
+                            use_bias=False)(_decoded)
 
     if instance_normalization is True:
         _decoded = InstanceNormalization(dtype='float32', name="decoder_instance_normalization_4")(_decoded)

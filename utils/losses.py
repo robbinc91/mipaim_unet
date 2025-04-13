@@ -78,6 +78,11 @@ def soft_dice_score(image1, image2, axis=(-3, -2, -1), eps=0.001):
 
     """
     #image2 = stable_one_hot(image2)
+
+    # Cast to float32
+    image1 = tf.cast(image1, tf.float32)
+    image2 = tf.cast(image2, tf.float32)
+    
     intersection = K.sum(K.abs(image1 * image2), axis=axis)
     dices = (2. * intersection + eps) / (K.sum(K.square(image1),
                                                axis) + K.sum(K.square(image2), axis) + eps)

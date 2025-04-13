@@ -18,13 +18,13 @@ from keras.layers import GlobalAveragePooling2D, \
 
 # TODO: Convert code to work with 2 and 3D
 
-def cbam_block(cbam_feature, ratio=8, **params):
+def cbam_block(cbam_feature, ratio=8, only_3x3_filters=False, **params):
     """Contains the implementation of Convolutional Block Attention Module(CBAM) block.
     As described in https://arxiv.org/abs/1807.06521.
     """
     cbam_feature = channel_attention(cbam_feature, ratio)
 
-    cbam_feature = spatial_attention(cbam_feature)
+    cbam_feature = spatial_attention(cbam_feature, only_3x3_filters=only_3x3_filters)
     return cbam_feature
 
 
@@ -41,11 +41,11 @@ def channel_attention(input_feature, ratio=8):
     shared_layer_one = Dense(channel//ratio,
                              activation='relu',
                              kernel_initializer='he_normal',
-                             use_bias=True,
+                             use_bias=False,
                              bias_initializer='zeros')
     shared_layer_two = Dense(channel,
                              kernel_initializer='he_normal',
-                             use_bias=True,
+                             use_bias=False,
                              bias_initializer='zeros')
 
     avg_pool = GlobalAveragePooling()(input_feature)
@@ -73,11 +73,11 @@ def channel_attention(input_feature, ratio=8):
     return multiply([input_feature, cbam_feature])
 
 
-def spatial_attention(input_feature):
+def spatial_attention(input_feature, only_3x3_filters=False):
 
     Conv = Conv3D if len(input_feature.shape) == 5 else Conv2D
 
-    kernel_size = 7
+    kernel_size = 7 if not only_3x3_filters else 3
 
     cbam_feature = input_feature
 
@@ -96,6 +96,22 @@ def spatial_attention(input_feature):
                           activation='sigmoid',
                           kernel_initializer='he_normal',
                           use_bias=False)(concat)
+    
+    if only_3x3_filters:
+        cbam_feature = Conv(filters=1,
+                          kernel_size=kernel_size,
+                          strides=1,
+                          padding='same',
+                          activation='sigmoid',
+                          kernel_initializer='he_normal',
+                          use_bias=False)(cbam_feature)
+        cbam_feature = Conv(filters=1,
+                          kernel_size=kernel_size,
+                          strides=1,
+                          padding='same',
+                          activation='sigmoid',
+                          kernel_initializer='he_normal',
+                          use_bias=False)(cbam_feature)
 
     cbam_feature = Permute((4, 2, 3, 1))(cbam_feature)
     assert cbam_feature.shape[-1] == 1
