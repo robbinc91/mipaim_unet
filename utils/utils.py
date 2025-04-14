@@ -24,7 +24,7 @@ dev_prt_augm = [i for i in range(250, 331)]
 cersegsys_train_prt = [31, 32, 36, 37, 38, 39, 43, 44, 45, 46, 47, 50, 52, 54, 61, 62, 65]
 cersegsys_dev_prt = [33, 66, 70]
 cersegsys_test_prt = [i for i in range(
-    31, 75) if i not in cersegsys_train_prt and i not in cersegsys_dev_prt]
+    31, 71) if i not in cersegsys_train_prt and i not in cersegsys_dev_prt]
 
 
 #cersegsys_train_prt_augm = [i for i in range(1, 71)]
