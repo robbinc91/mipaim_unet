@@ -418,7 +418,8 @@ class DataGenerator(keras.utils.Sequence):
                  labels=None,
                  filter_label=None,
                  is_segmentation=True,
-                 input_mask_prefix=None):
+                 input_mask_prefix=None,
+                 force_output_shape=None):
         self.dim = dim
         self.batch_size = batch_size
         self.outputs = outputs
@@ -434,6 +435,7 @@ class DataGenerator(keras.utils.Sequence):
         self.is_segmentation = is_segmentation
         self.classes = {}
         self.input_mask_prefix = input_mask_prefix
+        self.force_output_shape = force_output_shape
         if not self.is_segmentation:
             with open('{0}{1}'.format(self.root, 'classes.txt')) as input_file:
                 for line in input_file:
@@ -474,6 +476,7 @@ class DataGenerator(keras.utils.Sequence):
                 x = histeq(x)
 
             X.append(x[None, ...])
+            
 
             if self.input_mask_prefix is not None:
                 #print('opening', (self.root + self.in_folder + '/' + ID).replace('.nii', f'{self.input_mask_prefix}.nii'))
@@ -551,7 +554,12 @@ class DataGenerator(keras.utils.Sequence):
         else:
             y = np.array(y)
 
+        #if self.force_output_shape is not None:
+        #    X = tf.ensure_shape(X, self.force_output_shape)
+
         if self.input_mask_prefix is not None:
+            #if self.force_output_shape is not None:
+            #    X1 = tf.ensure_shape(X1, self.force_output_shape)
             return {'input_1': X, 'input_2': X1}, y
         
         return X, y

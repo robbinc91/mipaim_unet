@@ -21,3 +21,5 @@ app.py
 test.py
 train_*
 evals
+trained_models
+tests

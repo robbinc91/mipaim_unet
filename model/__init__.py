@@ -9,3 +9,5 @@ from model.model import unet, \
     mipaim_unet
 
 from model.acapulco import build_acapulco_parcellation_unet
+from model.swinunetr.swinunetr import SwinUNETR
+from model.openmapt1.model import OpenMapT1UNet
