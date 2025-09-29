@@ -8,6 +8,14 @@ from skimage import measure
 
 class BrainstemVisualizer:
     def __init__(self):
+
+        # TODO: make voxel_size auto
+        self.voxel_size = (1, 1, 1)  # (x,y,z) dimensions in mm
+        self.scale_bar_length = 10  # mm
+        self.scale_bar_thickness = 3
+        self.scale_bar_color = '#1f1'#'white'
+        self.scale_bar_offset = (0.1, 0.1)  # Relative position from bottom-right
+
         self.COLOR_MAP = {
             1: (1, 0, 0),   # Medulla - Red
             2: (0, 1, 0),   # Pons - Green
@@ -18,6 +26,48 @@ class BrainstemVisualizer:
         self.OVERLAY_CMAP = ListedColormap(['black', 'red', 'green', 'blue'])
         self.DPI = 300
         self.FIG_SIZE = (12, 4)
+
+    def _add_scale_bar(self, ax, plane='axial'):
+        """Add anatomical scale bar to axis"""
+        if plane == 'axial':
+            pixel_length = self.scale_bar_length / self.voxel_size[0]  # x-dimension
+            orientation = 'horizontal'
+        elif plane == 'sagittal':
+            pixel_length = self.scale_bar_length / self.voxel_size[1]  # y-dimension
+            orientation = 'horizontal'
+        else:  # coronal
+            pixel_length = self.scale_bar_length / self.voxel_size[2]  # z-dimension
+            orientation = 'vertical'
+        
+        # Calculate position
+        xlim = ax.get_xlim()
+        ylim = ax.get_ylim()
+        x_pos = xlim[1] - (xlim[1]-xlim[0])*self.scale_bar_offset[0]
+        y_pos = ylim[0] + (ylim[1]-ylim[0])*self.scale_bar_offset[1]
+        
+        if orientation == 'horizontal':
+            ax.plot([x_pos - pixel_length, x_pos], 
+                    [y_pos, y_pos], 
+                    color=self.scale_bar_color,
+                    linewidth=self.scale_bar_thickness)
+            ax.text(x_pos - pixel_length/2, 
+                    y_pos + (ylim[1]-ylim[0])*0.05, 
+                    f'{self.scale_bar_length} mm',
+                    color=self.scale_bar_color,
+                    ha='center', va='bottom',
+                    fontsize=8)
+        else:
+            ax.plot([x_pos, x_pos],
+                    [y_pos, y_pos + pixel_length],
+                    color=self.scale_bar_color,
+                    linewidth=self.scale_bar_thickness)
+            ax.text(x_pos + (xlim[1]-xlim[0])*0.05,
+                    y_pos + pixel_length/2,
+                    f'{self.scale_bar_length} mm',
+                    color=self.scale_bar_color,
+                    ha='left', va='center',
+                    rotation=90,
+                    fontsize=8)
         
     def visualize_case(self, image, y_true, y_pred, case_id, output_dir):
         """Generate all visualizations for a single case"""
@@ -74,9 +124,12 @@ class BrainstemVisualizer:
             ax.set_title(f'{slice_name} View')
             ax.axis('off')
 
+            # Add scale bar
+            self._add_scale_bar(ax, slice_name.lower())
+
         plt.suptitle(title)
         plt.tight_layout()
-        plt.savefig(save_path, dpi=self.DPI, bbox_inches='tight')
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
         
     def _plot_orthogonal_slices(self, image, segmentation, title, save_path):
@@ -111,8 +164,10 @@ class BrainstemVisualizer:
     
     def _plot_3d_segmentation(self, segmentation, title, save_path):
         """Create 3D surface rendering of segmentation"""
-        fig = plt.figure(figsize=(10, 10))
+        fig = plt.figure(figsize=(10, 10), facecolor='black')
         ax = fig.add_subplot(111, projection='3d')
+
+        ax.set_facecolor('black')
         
         for label_val, color in self.COLOR_MAP.items():
             mask = (segmentation == label_val).astype(np.int8)
@@ -130,7 +185,8 @@ class BrainstemVisualizer:
         ax.set_ylim(0, segmentation.shape[1])
         ax.set_zlim(0, segmentation.shape[2])
         ax.set_title(title)
-        ax.view_init(elev=30, azim=45)
+        ax.view_init(elev=25, azim=45)
+        ax.axis('off')
         plt.tight_layout()
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close()

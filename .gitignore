@@ -23,3 +23,5 @@ train_*
 evals
 trained_models
 tests
+paper_writing/model_names.py
+paper_writing/build_comparison_tables.py

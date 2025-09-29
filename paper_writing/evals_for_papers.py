@@ -1,24 +1,62 @@
 import os
+
+# This code does nothing!
+use_gpu_for_inference = True
+if not use_gpu_for_inference:
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+elif 'CUDA_VISIBLE_DEVICES' in os.environ:
+    del os.environ['CUDA_VISIBLE_DEVICES']
+
+
+import sys
 import numpy as np
 import nibabel as nib
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
-from skimage.measure import label, regionprops
-from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tqdm import tqdm
 import pandas as pd
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from skimage import measure
 import pandas as pd
 from scipy.spatial.distance import directed_hausdorff
 from scipy.spatial import cKDTree
 from skimage.measure import label
 from keras_contrib.layers import InstanceNormalization
-from keras.models import load_model
+from keras.models import load_model, Model
+from skimage.segmentation import find_boundaries
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from utils.losses import soft_dice_loss, soft_dice_score
 from utils.utils import cersegsys_test_prt, cersegsys_train_prt
-from visualizations_for_papers import BrainstemVisualizer
+from paper_writing.visualizations_for_papers import BrainstemVisualizer
+from attention.attention import cbam_block
+from scipy.spatial.distance import cdist
+
+
+    
+
+def get_latrgest_connected_component(mask):
+
+    mask = mask.astype(np.uint8)
+    output_mask = np.zeros_like(mask)
+    unique_labels = np.unique(mask)[1:]
+    for label_val in unique_labels:
+        
+        binary_mask = (mask == label_val).astype(np.uint8)
+        
+        try:
+            labeled_array, num_components = label(binary_mask)
+        except (TypeError, ValueError) as e:
+            labeled_array = label(binary_mask)
+            num_components = labeled_array.max()
+
+        if num_components == 0:
+            #print('components 0')
+            continue
+
+        
+        component_sizes = np.bincount(labeled_array.flat)[1:]
+        largest_component_id = np.argmax(component_sizes) + 1
+        output_mask[labeled_array == largest_component_id] = label_val
+
+    return output_mask
 
 class BrainstemSegmentationEvaluator:
     def __init__(self):
@@ -36,6 +74,9 @@ class BrainstemSegmentationEvaluator:
     def evaluate_case(self, y_true, y_pred):
         """Calculate all metrics for a single case"""
         metrics = {}
+
+        y_true = get_latrgest_connected_component(y_true)
+        y_pred = get_latrgest_connected_component(y_pred)
         
         # Per-label metrics
         for label_val, label_name in self.LABEL_NAMES.items():
@@ -117,16 +158,34 @@ class BrainstemSegmentationEvaluator:
             nsd = ((tree_pred.query(surface_true)[0] <= 1.0).mean() + 
                    (tree_true.query(surface_pred)[0] <= 1.0).mean()) / 2
             
+            pred_boundary = find_boundaries(y_pred, mode='inner')
+            gt_boundary = find_boundaries(y_true, mode='inner')
+
+            pred_points = np.argwhere(pred_boundary)
+            gt_points = np.argwhere(gt_boundary)
+
+            
+            pred_points = pred_points * np.array((1, 1, 1))
+            gt_points = gt_points * np.array((1, 1, 1))
+
+            distances = cdist(pred_points, gt_points, metric='euclidean')
+
+            min_distances = np.min(distances, axis=1)
+            hd95 = np.percentile(min_distances, 95)
+            
+            
             return {
                 f'{prefix}_HD': hd,
                 f'{prefix}_ASD': asd,
-                f'{prefix}_NSD': nsd
+                f'{prefix}_NSD': nsd,
+                f'{prefix}_HD95': hd95
             }
         except:
             return {
                 f'{prefix}_HD': np.nan,
                 f'{prefix}_ASD': np.nan,
-                f'{prefix}_NSD': np.nan
+                f'{prefix}_NSD': np.nan,
+                f'{prefix}_HD95': np.nan
             }
     
     def _volume_metrics(self, y_true, y_pred, prefix):
@@ -158,24 +217,42 @@ class BrainstemSegmentationEvaluator:
             f'{prefix}_Detected': detected
         }
     
-    def evaluate_dataset(self, model, dataset):
+    def evaluate_dataset(self, model, dataset, model_name='mipaim'):
         """Evaluate model on entire dataset"""
         all_metrics = []
         
-        for (x, y_true) in tqdm(dataset, desc='Evaluating'):
+        #import time
+        #start_time = time.time()
+
+        for ((x, y_true), img_index) in tqdm(dataset, desc='Evaluating'):
+            
             y_pred = model.predict(x[None, None, ...])
             
+
             y_pred = y_pred.squeeze()
 
-            #output = np.zeros((y_pred.shape[1:]))
+            #print(y_pred.shape)
             output = np.argmax(y_pred > 0.8, axis=0).astype(np.uint8)
+            #output = np.zeros((y_pred.shape[1:]))
             #for indx, mask in enumerate(y_pred):
-            #    output += (mask > .5).astype(np.uint8) * indx
+
+            # save segmentations
+            if not os.path.exists(f'evals/segmentations/{model_name}'):
+                os.makedirs(f'evals/segmentations/{model_name}')
+            nib.save(nib.Nifti1Image(output, affine=np.array([[-1, 0, 0, 0], [0, -1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])), f'evals/segmentations/{model_name}/{img_index}.nii.gz')
+            #    print(indx)
+            #    if indx > 0:
+            #        #continue
+            #        output += (mask > .5).astype(np.uint8) * indx
 
             #print(output.shape)
             #y_pred = np.argmax(y_pred, axis=-1)[0]
             case_metrics = self.evaluate_case(y_true, output)
             all_metrics.append(case_metrics)
+
+        #end_time = time.time()
+
+        #print('total time (ms):', end_time - start_time)
         
         return pd.DataFrame(all_metrics)
     
@@ -252,32 +329,69 @@ def load_case(image_path, label_path):
     
     return img, lbl
 
-models = {
-    'unet': 'D:\\university\\phd\\phd\\weights\\mipaim_unet\\202504_only_unet_v2_br\\seg\\model.epoch=165.val_dice_score=0.99581.h5',
-    'acapulco': 'D:\\university\\phd\\phd\\weights\\mipaim_unet\\202504_acapulco_br\\seg\\model.epoch=165.val_dice_score=0.99495.h5',
-    'mipaim': 'D:\\university\\phd\\phd\\weights\\mipaim_unet\\202504_br\\seg\\model.epoch=165.val_dice_score=0.99154.h5'
-}
+from paper_writing.model_names import models
+
 images_folder = 'D:\\university\\phd\\phd\\datasets\\cersegsys_7\\data\\'
 
 
+def count_layers(model):
+    total = 0
+    for layer in model.layers:
+        if hasattr(layer, 'layers'):
+            total += count_layers(layer)
+        else:
+            total += 1
+    return total
+
+
+def get_memory_usage(model, batch_size=1):
+    shapes_mem_count = 0
+    for layer in model.layers:
+        single_layer_mem = 1
+        
+        output_shape = layer.output_shape
+
+        if isinstance(output_shape, list):
+            for shape in output_shape:
+                if shape is None:
+                    continue
+                single_layer_mem = np.prod([s for s in shape if s is not None])
+                shapes_mem_count += single_layer_mem
+        else:
+            if output_shape is None:
+                continue
+            single_layer_mem = np.prod([s for s in output_shape if s is not None])
+            shapes_mem_count += single_layer_mem
+
+    trainable_count = sum([np.prod(w.shape) for w in model.trainable_weights])
+    non_trainable_count = sum([np.prod(w.shape) for w in model.non_trainable_weights])
+
+    total_memory = 4.0 * (batch_size *shapes_mem_count + trainable_count + non_trainable_count)
+    return total_memory / 1024**3, trainable_count + non_trainable_count, count_layers(model)
+
 def perform_test():
     test_dataset = [
-        load_case('%sa%2d-histeq.nii.gz' % (images_folder, i), '%sa%2d-seg.nii.gz' % (images_folder, i)) for i in cersegsys_train_prt
+        (load_case('%sa%2d-histeq.nii.gz' % (images_folder, i), '%sa%2d-seg.nii.gz' % (images_folder, i)), '%2d'%(i)) for i in cersegsys_test_prt
     ]
 
-    
-
+    models = {'mipaim': 'D:\\university\\phd\\phd\\weights\\mipaim_unet\\202504_br\\seg\\model.epoch=165.val_dice_score=0.99154.h5'}
+    #for model_name in {'mipaim': 'D:\\university\\phd\\phd\\weights\\mipaim_unet\\202504_br\\seg\\model.epoch=165.val_dice_score=0.99154.h5'}:
     for nodel_name in models:
-        print(nodel_name)
-        model_ = load_model(models[nodel_name], custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization})
+        #print(nodel_name)
+        model_ = load_model(models[nodel_name], custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization, 'cbam_block': cbam_block})
         # Initialize evaluator
+        _stats = get_memory_usage(model_)
+        print(nodel_name, _stats)
+        
         evaluator = BrainstemSegmentationEvaluator()
 
         # Evaluate model on test set
-        test_metrics = evaluator.evaluate_dataset(model_, test_dataset)
+        
+        test_metrics = evaluator.evaluate_dataset(model_, test_dataset, model_name=nodel_name)
+        
 
         # Generate comprehensive report
-        stats = evaluator.generate_report(test_metrics, f'evals/paper_metrics/train_set/{nodel_name}')
+        stats = evaluator.generate_report(test_metrics, f'evals/paper_metrics/test_set/{nodel_name}')
 
         # Print key results
         print(f"Mean Brainstem Dice: {stats['Brainstem_Dice_mean']:.3f} ± {stats['Brainstem_Dice_std']:.3f}")
@@ -303,7 +417,7 @@ def make_visualizations():
         print(nodel_name)
         model_ = load_model(models[nodel_name], custom_objects={'soft_dice_score': soft_dice_score, 'soft_dice_loss': soft_dice_loss, 'InstanceNormalization': InstanceNormalization})
 
-        image, y_true = test_dataset[5]  # Load your test case
+        image, y_true = test_dataset[11]  # Load your test case
         y_pred = model_.predict(image[None, None, ...])
         y_pred = y_pred.squeeze()
 
@@ -312,13 +426,14 @@ def make_visualizations():
 
         # Generate metrics and visualizations
         #metrics = evaluator.evaluate_case(y_true, y_pred)
-        visualizer.visualize_case(image, y_true, output, 
-                                "case_001", f'evals/paper_metrics/test_set/{nodel_name}/visualizations/')
+
+        y_true = get_latrgest_connected_component(y_true)
+        output = get_latrgest_connected_component(output)
 
         # For paper figures - highlight a representative case
         visualizer.visualize_case(image, y_true, output,
                                 "representative_case", f'evals/paper_metrics/test_set/{nodel_name}/figures')
 if __name__ == '__main__':
-    #perform_test()
-    make_visualizations()
+    perform_test()
+    #make_visualizations()
     
